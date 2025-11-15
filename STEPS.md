@@ -4,8 +4,10 @@ Progress tracker mapped to the GDD roadmap (M0–M6). Marked with `[X]` when com
 
 - [x] **M0 — Infra & Skeleton**  
        Monorepo created, Fastify backend scaffolded with tRPC, env scaffolding, Swagger, and lint/test tooling.
-- [ ] **M1 — Idle Combat Core (Client Stub)**  
-       Three.js/bitecs client idle scene prototype with `[THRALL]` marching loop.
+- [x] **M1 — Idle Combat Core (Client Stub)**  
+       First Vite-based Three.js/bitecs client slice with `[THRALL]` marching loop, HUD surfacing `[DUSKEN COIN]` and `[BLOOD SHARDS]`, and blood trail VFX.
+- [x] **Client ↔ Server Handshake**  
+       Integrated browser tRPC client with Fastify `/trpc/player.getProfile`, schema validation, and graceful offline fallback to keep canonical stats synced.
 - [ ] **M2 — Deterministic Combat (Workers)**  
        Server battle simulator + replay sync services.
 - [ ] **M3 — PvP + Resurrection**  
