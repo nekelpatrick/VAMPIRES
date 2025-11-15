@@ -4,5 +4,5 @@
     "outDir": "../dist/test",
     "noEmit": true
   },
-  "include": ["../src/**/*.ts", "./**/*.ts"]
+  "include": ["../src/**/*.ts", "../src/**/*.d.ts", "./**/*.ts"]
 }

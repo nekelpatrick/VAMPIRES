@@ -2,6 +2,7 @@ import cors from '@fastify/cors'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 
 import { env } from './config/env'
+import type {} from './types/fastify'
 import { registerHealthRoutes } from './server/routes/health'
 import { registerSpecRoute } from './server/routes/spec'
 import { registerTrpcPlugin } from './trpc/plugin'
