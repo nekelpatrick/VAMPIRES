@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { trpcClient } from './trpc'
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000'
 
 const playerProfileSchema = z.object({
@@ -35,18 +37,9 @@ export const fetchHealth = async () => {
 }
 
 export const fetchPlayerProfile = async (playerId = 'demo-player') => {
-  const url = new URL('/trpc/player.getProfile', API_BASE)
-  url.searchParams.set('input', JSON.stringify({ playerId }))
-
   try {
-    const response = await fetch(url, { headers: { 'content-type': 'application/json' } })
-    if (!response.ok) {
-      throw new Error('profile request failed')
-    }
-
-    const payload = await response.json()
-    const data = payload?.result?.data?.json ?? payload?.result?.data
-    return playerProfileSchema.parse(data)
+    const profile = await trpcClient.player.getProfile.query({ playerId })
+    return playerProfileSchema.parse(profile)
   } catch {
     return fallbackProfile
   }
