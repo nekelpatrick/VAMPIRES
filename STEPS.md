@@ -9,7 +9,7 @@ Progress tracker mapped to the GDD roadmap (M0–M6). Marked with `[X]` when com
 - [x] **Client ↔ Server Handshake**  
        Integrated browser tRPC client with Fastify `/trpc/player.getProfile`, schema validation, and graceful offline fallback to keep canonical stats synced.
 - [ ] **M2 — Deterministic Combat (Workers)**  
-      Server battle simulator + replay sync services. _Client-side fixed-tick combat loop, HUD/HP sync, deterministic locomotion, and spawn/camera tuning landed; awaiting server worker implementation._
+       Server battle simulator + replay sync services. _Client-side fixed-tick combat loop, HUD/HP sync, deterministic locomotion, and spawn/camera tuning landed; awaiting server worker implementation._
 - [ ] **M3 — PvP + Resurrection**  
        Matchmaker queues, `[DEATH]` handling, revival flows.
 - [ ] **M4 — Economy & Monetization**  
