@@ -4,7 +4,7 @@ Short guide to keep everything consistent across the client/server stack.
 
 ### Structure
 
-- `client/` (coming soon): Three.js + bitecs frontline.
+- `client/`: Three.js + bitecs frontline experience.
 - `server/`: Fastify+tRPC backend, PostgreSQL/Redis/S3 ready.
 - `Docs/`: Authoritative GDD plus any specs.
 - `VARIABLES.ts`: Canonical `[THRALL]`, `[DUSKEN COIN]`, etc. shared references.
@@ -19,6 +19,16 @@ npm run dev
 ```
 
 Swagger UI lives at `http://localhost:<APP_PORT>/docs` (defaults to `3000`).
+
+### Quick Start (Client)
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Set `VITE_API_BASE` if the backend is not on `http://localhost:3000`. The HUD surface reflects `[DUSKEN COIN]`, `[BLOOD SHARDS]`, and `[THRALL]` directly from the server (with graceful offline fallback).
 
 ### Conventions
 
