@@ -5,3 +5,4 @@ alwaysApply: true
 1. The GODLIKE SOURCE OF TRUTH is GAME-DESIGN-DOCUMENT.md
 2. use npm
 3. TRPC is ESSENTIAL
+4. every time you create any script file or server file related to endpoint logic, you MUST write unit tests.

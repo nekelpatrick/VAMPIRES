@@ -1,38 +1,26 @@
-import { join } from 'node:path'
-import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
+import cors from '@fastify/cors'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 
-export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
+import { env } from './config/env'
+import { registerHealthRoutes } from './server/routes/health'
+import { registerSpecRoute } from './server/routes/spec'
+import { registerTrpcPlugin } from './trpc/plugin'
 
-}
-// Pass --options via CLI arguments in command to enable these options.
-const options: AppOptions = {
-}
+export type AppOptions = FastifyServerOptions
 
-const app: FastifyPluginAsync<AppOptions> = async (
-  fastify,
-  opts
-): Promise<void> => {
-  // Place here your custom code!
+const options: AppOptions = {}
 
-  // Do not touch the following lines
-
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
-  // eslint-disable-next-line no-void
-  void fastify.register(AutoLoad, {
-    dir: join(__dirname, 'plugins'),
-    options: opts
+const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
+  await fastify.register(cors, {
+    origin: true,
+    credentials: true
   })
 
-  // This loads all plugins defined in routes
-  // define your routes in one of these
-  // eslint-disable-next-line no-void
-  void fastify.register(AutoLoad, {
-    dir: join(__dirname, 'routes'),
-    options: opts
-  })
+  fastify.decorate('env', env)
+
+  await fastify.register(registerTrpcPlugin)
+  await fastify.register(registerHealthRoutes)
+  await fastify.register(registerSpecRoute)
 }
 
 export default app
