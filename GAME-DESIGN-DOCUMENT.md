@@ -263,15 +263,17 @@ Revenue driver for **[GAIN MONEY]**.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# 10. TECHNICAL DESIGN (GO BACKEND)
+# 10. TECHNICAL DESIGN (NODE BACKEND)
+
+Fastify is one of the most solid, production-hardened choices for a Node.js game backend today: it is actively maintained by contributors who also support Node core, is battle-tested by companies like NearForm, Microsoft, and Platformatic, and offers frequent patch releases with a stable API surface. Its lightweight, schema-driven foundation sustains top-tier throughput without hiding the routing, lifecycle, or plugin controls engineers expect. The native TypeScript definitions and existing tRPC adapters let us share types with the Three.js client cleanly, avoiding custom glue while staying lighter than decorator-heavy frameworks such as NestJS. Operational reliability features—JSON schema validation, logging hooks, graceful shutdown, HTTP/2/WebSocket support, and plugin isolation—make it straightforward to run behind load balancers, capture observability, and execute zero-downtime deploys. In short, Fastify provides a dependable, well-supported base that only grows more complex when we opt in, aligning with our requirement for a solid backend without unnecessary bells and whistles.
 
 ### 10.1 Services
 
-- **API Gateway (Go)**: REST + WebSocket
-- **Combat Worker (Go)**: deterministic battle simulator
-- **Matchmaker (Go)**: PvP queue management
-- **Avatar Service (Go)**: handles avatar generation requests
-- **Economy Service (Go)**: currency operations, transactions, logs
+- **API Gateway (Fastify)**: REST + WebSocket
+- **Combat Worker (Node.js)**: deterministic battle simulator
+- **Matchmaker (Node.js)**: PvP queue management
+- **Avatar Service (Node.js)**: handles avatar generation requests
+- **Economy Service (Node.js)**: currency operations, transactions, logs
 
 ### 10.2 Persistence
 
@@ -411,13 +413,13 @@ damage = max(1, attacker.attack - target.defense * 0.5)
 
 ### M0 — Infra & Skeleton
 
-Monorepo, CI/CD, initial ECS, empty Three.js scene, basic Go server.
+Monorepo, CI/CD, initial ECS, empty Three.js scene, basic Fastify server.
 
 ### M1 — Idle Combat Core
 
 Thrall model, Horde spawn, ECS logic, particles, server-logged combat.
 
-### M2 — Deterministic Combat (Go)
+### M2 — Deterministic Combat (Node.js)
 
 ResolveBattle implementation + replay sync.
 
@@ -466,7 +468,7 @@ Analytics, A/B testing for monetization, performance tuning.
 # 19. IMMEDIATE DEVELOPMENT ACTIONS (TO START THE PROJECT)
 
 1. **Create monorepo** with `client/` and `server/` folders + CI pipeline.
-2. **Implement Go combat worker prototype** with deterministic RNG + event logs.
+2. **Implement Node combat worker prototype** with deterministic RNG + event logs.
 3. **Create first Three.js scene**: side-view camera + basic thrall mesh + ECS movement + HUD showing [DUSKEN COIN] & [BLOOD SHARDS].
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
