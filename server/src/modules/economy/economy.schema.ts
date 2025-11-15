@@ -9,3 +9,11 @@ export const currencyWalletSchema = z.object({
 
 export type CurrencyWallet = z.infer<typeof currencyWalletSchema>
 
+export const walletSyncInputSchema = z.object({
+  playerId: z.string().min(1),
+  duskenCoinDelta: z.number(),
+  bloodShardDelta: z.number()
+})
+
+export type WalletSyncInput = z.infer<typeof walletSyncInputSchema>
+

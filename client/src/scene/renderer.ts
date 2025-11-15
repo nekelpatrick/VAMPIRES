@@ -21,9 +21,9 @@ export const createScene = (canvas: HTMLCanvasElement) => {
   scene.background = new Color(0x050308)
   scene.fog = new FogExp2(0x050308, 0.08)
 
-  const camera = new OrthographicCamera(-6, 6, 4, -4, 0.1, 100)
-  camera.position.set(0, 2, 10)
-  camera.lookAt(0, 1, 0)
+  const camera = new OrthographicCamera(-7, 7, 5.5, -5.5, 0.1, 100)
+  camera.position.set(0, 3, 12)
+  camera.lookAt(0, 0.5, 0)
 
   const hemisphere = new HemisphereLight(0x6d4c70, 0x0d050d, 0.9)
   scene.add(hemisphere)
@@ -45,7 +45,7 @@ export const createScene = (canvas: HTMLCanvasElement) => {
     const width = canvas.clientWidth || window.innerWidth
     const height = canvas.clientHeight || window.innerHeight
     const aspect = width / height
-    const viewHeight = 4
+    const viewHeight = 5.5
 
     camera.left = -viewHeight * aspect
     camera.right = viewHeight * aspect

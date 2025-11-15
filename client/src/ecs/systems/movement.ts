@@ -15,7 +15,7 @@ export const createMovementSystem = (world: GameWorld, thrall: ThrallInstance) =
       Position.y[entity] += Velocity.y[entity] * deltaSeconds
       Position.z[entity] += Velocity.z[entity] * deltaSeconds
 
-      if (Position.x[entity] > 2.5 || Position.x[entity] < -2.5) {
+      if (Position.x[entity] > 3.5 || Position.x[entity] < -3.5) {
         Velocity.x[entity] = -Velocity.x[entity]
       }
 

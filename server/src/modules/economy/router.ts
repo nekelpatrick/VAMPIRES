@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { procedure, router } from '../../trpc/core'
-import { currencyWalletSchema } from './economy.schema'
+import { currencyWalletSchema, walletSyncInputSchema } from './economy.schema'
 import { economyService } from './economy.service'
 
 export const economyRouter = router({
@@ -10,6 +10,13 @@ export const economyRouter = router({
     .output(currencyWalletSchema)
     .query(async ({ input }) => {
       const wallet = await economyService.getWallet(input.playerId)
+      return currencyWalletSchema.parse(wallet)
+    }),
+  syncWallet: procedure
+    .input(walletSyncInputSchema)
+    .output(currencyWalletSchema)
+    .mutation(async ({ input }) => {
+      const wallet = await economyService.applyDelta(input)
       return currencyWalletSchema.parse(wallet)
     })
 })

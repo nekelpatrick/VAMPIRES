@@ -30,54 +30,199 @@ canvas#battlefield {
 
 .hud {
   position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
+  inset: 0;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
-  background: rgba(8, 3, 8, 0.6);
-  border: 1px solid rgba(164, 59, 59, 0.6);
-  box-shadow: 0 0 24px rgba(128, 10, 10, 0.35);
+  justify-content: space-between;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem);
+  color: #f7ddc6;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  max-width: min(90vw, 320px);
+  letter-spacing: 0.06em;
 }
 
-.hud__thrall {
+.hud__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hud__player {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(22, 7, 12, 0.8), rgba(52, 10, 18, 0.7));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  max-width: min(90vw, 420px);
+  pointer-events: auto;
+}
+
+.hud__avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  border: 2px solid #f2b851;
+  background: linear-gradient(145deg, #371112, #100407);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  text-align: center;
+}
+
+.hud__playerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hud__name {
   font-size: 1rem;
-  color: #f8d9a0;
+  color: #fdd7a5;
+}
+
+.hud__power {
+  font-size: 0.8rem;
+  color: #ffa95e;
 }
 
 .hud__currencies {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 0.35rem;
-  font-size: 0.85rem;
 }
 
-.hud__currency {
+.hud__currencyRow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  background: rgba(11, 4, 13, 0.65);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
 }
 
-.hud__currency--dusken::before,
-.hud__currency--blood::before {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
+.hud__currencyIcon {
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 999px;
   box-shadow: 0 0 12px currentColor;
 }
 
-.hud__currency--dusken::before {
-  background: #f0a202;
-  color: #f0a202;
+.hud__timer {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  color: #c7b1bb;
 }
 
-.hud__currency--blood::before {
-  background: #d7263d;
-  color: #d7263d;
+.hud__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.hud__energyBar {
+  width: min(80vw, 420px);
+  height: 0.9rem;
+  border-radius: 999px;
+  background: rgba(10, 4, 12, 0.65);
+  border: 1px solid rgba(245, 184, 139, 0.35);
+  overflow: hidden;
+}
+
+.hud__energyFill {
+  height: 100%;
+  background: linear-gradient(90deg, #05d39f, #82f0ff);
+  width: 40%;
+  transition: width 0.25s ease;
+}
+
+.hud__status {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #c8bbc3;
+}
+
+.hud__abilities {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.hud__ability {
+  width: clamp(3rem, 8vw, 4.2rem);
+  aspect-ratio: 1;
+  border-radius: 0.9rem;
+  background: rgba(17, 5, 10, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  text-align: center;
+  pointer-events: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.hud__ability--active {
+  border-color: #f5b173;
+  box-shadow: 0 0 18px rgba(245, 177, 115, 0.45);
+}
+
+.hud__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.hud__inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+  gap: 0.4rem;
+}
+
+.hud__slot {
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+  background: rgba(24, 8, 14, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  pointer-events: auto;
+}
+
+.hud__nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0.8rem;
+  border-radius: 1.2rem;
+  background: rgba(7, 2, 7, 0.65);
+  pointer-events: auto;
+}
+
+.hud__nav button {
+  background: none;
+  border: none;
+  color: #e7d2f6;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.hud__pending {
+  font-size: 0.7rem;
+  color: #a178a6;
+  text-align: right;
 }
 
