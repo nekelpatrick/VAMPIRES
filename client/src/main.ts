@@ -32,12 +32,12 @@ root.appendChild(hudRoot)
 const seedBuffer = new Uint32Array(1)
 crypto.getRandomValues(seedBuffer)
 const world = createGameWorld(seedBuffer[0] || Date.now())
-const { renderer, scene, camera } = createScene(canvas)
+const { renderer, scene, camera, updateCameraFocus } = createScene(canvas)
 const thrall = spawnThrall(world, scene)
 const updateBloodTrail = createBloodTrail(scene, thrall)
 const hordeVisuals = createHordeVisuals(scene)
 
-const movementSystem = createMovementSystem(world, thrall)
+const movementSystem = createMovementSystem(world, thrall, hordeVisuals)
 const animationSystem = createAnimationSystem(thrall, updateBloodTrail)
 const actionPointsSystem = createActionPointSystem(world)
 const targetingSystem = createTargetingSystem(world)
@@ -93,6 +93,7 @@ const animate = (now: number) => {
 
   ticker.update(deltaSeconds)
   movementSystem(deltaSeconds)
+  updateCameraFocus(thrall.mesh.position.x * 0.4)
   animationSystem(deltaSeconds)
   renderer.render(scene, camera)
 
@@ -114,7 +115,9 @@ const hydrateProfile = async () => {
     .setResources({
       thrallName: profile.displayName,
       duskenCoin: profile.duskenCoinBalance,
-      bloodShards: profile.bloodShardBalance
+      bloodShards: profile.bloodShardBalance,
+      thrallHp: 320,
+      thrallHpMax: 320
     })
 }
 

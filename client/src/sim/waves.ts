@@ -7,9 +7,9 @@ export type EnemyStats = {
 }
 
 export const computeWaveBudget = (wave: number) => ({
-  totalEnemies: 4 + wave,
-  maxConcurrent: Math.min(6, 3 + Math.floor(wave / 2)),
-  spawnInterval: Math.max(0.6, 1.6 - wave * 0.08)
+  totalEnemies: Math.round(6 + wave * 1.5),
+  maxConcurrent: Math.min(10, 4 + Math.floor(wave / 1.5)),
+  spawnInterval: Math.max(0.45, 1.4 - wave * 0.06)
 })
 
 export const enemyStatsForWave = (wave: number, elite: boolean): EnemyStats => {

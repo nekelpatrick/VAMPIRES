@@ -16,13 +16,15 @@ import {
   Reward,
   SpawnTag,
   Stats,
-  Target
+  Target,
+  Velocity
 } from '../components'
 import type { GameWorld } from '../world'
 
 type HordeVisuals = {
-  spawn: (entity: number, options: { elite: boolean; offset: number; height: number }) => void
+  spawn: (entity: number, options: { elite: boolean; x: number; z: number; height: number }) => void
   updateHealth: (entity: number, ratio: number) => void
+  setPosition: (entity: number, x: number, y: number, z: number) => void
   remove: (entity: number) => void
 }
 
@@ -65,13 +67,16 @@ export const createSpawnHordeSystem = (
     addComponent(world, Target, entity)
     addComponent(world, SpawnTag, entity)
     addComponent(world, Reward, entity)
+    addComponent(world, Velocity, entity)
 
-    const offset = world.combat.rng.range(-0.5, 3.5)
+    const spawnSide = world.combat.rng.nextFloat() > 0.5 ? 1 : -1
+    const offsetX = world.combat.rng.range(0.5, 2.5)
+    const spawnZ = world.combat.rng.range(-2.5, 2.5)
     const height = world.combat.rng.range(0, 0.8)
 
-    Position.x[entity] = 2.2 + offset
+    Position.x[entity] = spawnSide * (4.5 + offsetX)
     Position.y[entity] = -0.6 + height * 0.5
-    Position.z[entity] = 0
+    Position.z[entity] = spawnZ
 
     Stats.attack[entity] = stats.attack
     Stats.defense[entity] = stats.defense
@@ -87,12 +92,20 @@ export const createSpawnHordeSystem = (
     Target.eid[entity] = 0
     SpawnTag.wave[entity] = world.combat.wave
     SpawnTag.elite[entity] = isElite ? 1 : 0
+    Velocity.x[entity] = 0
+    Velocity.y[entity] = 0
+    Velocity.z[entity] = 0
 
     const reward = rewardForEnemy(world.combat.wave, isElite, world.combat.rng.nextFloat())
     Reward.duskenCoin[entity] = reward.duskenCoin
     Reward.bloodShards[entity] = reward.bloodShards
 
-    hordeVisuals.spawn(entity, { elite: isElite, offset, height })
+    hordeVisuals.spawn(entity, {
+      elite: isElite,
+      x: Position.x[entity],
+      z: Position.z[entity],
+      height: height * 0.5
+    })
     world.combat.waveBudget.spawned += 1
     world.combat.phase = 'fighting'
   }
@@ -120,8 +133,7 @@ export const createSpawnHordeSystem = (
 
     if (
       world.combat.waveBudget.cleared >= world.combat.waveBudget.totalEnemies &&
-      activeEnemies.length === 0 &&
-      world.combat.phase !== 'defeat'
+      activeEnemies.length === 0
     ) {
       world.combat.phase = 'wave-clear'
       const clearedWave = world.combat.wave

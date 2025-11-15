@@ -1,13 +1,6 @@
 import { addComponent, addEntity } from 'bitecs'
 import type { Scene } from 'three'
-import {
-  BoxGeometry,
-  Group,
-  Mesh,
-  MeshStandardMaterial,
-  SphereGeometry,
-  Vector3
-} from 'three'
+import { BoxGeometry, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three'
 
 import {
   ActionPoints,
@@ -31,31 +24,37 @@ export const spawnThrall = (world: GameWorld, scene: Scene): ThrallInstance => {
   const thrallGroup = new Group()
   thrallGroup.position.copy(new Vector3(-3.2, -0.8, 0))
 
-  const armorMaterial = new MeshStandardMaterial({
-    color: 0x2a2d34,
-    emissive: 0x120b13,
-    roughness: 0.6,
-    metalness: 0.2
+  const bodyMaterial = new MeshStandardMaterial({
+    color: 0xf26b1d,
+    emissive: 0x221105,
+    roughness: 0.4,
+    metalness: 0.15
   })
 
-  const body = new Mesh(new BoxGeometry(1.2, 2.6, 0.8), armorMaterial)
-  body.position.y = 0.5
+  const body = new Mesh(new BoxGeometry(0.4, 1.5, 0.3), bodyMaterial)
+  body.position.y = -0.05
   thrallGroup.add(body)
 
-  const head = new Mesh(new BoxGeometry(1.1, 1, 0.9), armorMaterial)
-  head.position.y = 1.8
-  thrallGroup.add(head)
-
-  const eyeMaterial = new MeshStandardMaterial({
-    color: 0xff4d4d,
-    emissive: 0xff1c1c,
-    emissiveIntensity: 1.5
+  const trimMaterial = new MeshStandardMaterial({
+    color: 0x110509,
+    emissive: 0x110509,
+    roughness: 0.6
   })
 
-  const leftEye = new Mesh(new SphereGeometry(0.12, 16, 16), eyeMaterial.clone())
-  leftEye.position.set(-0.25, 1.9, 0.35)
+  const trim = new Mesh(new BoxGeometry(0.45, 1.6, 0.08), trimMaterial)
+  trim.position.set(0, 0, 0.2)
+  thrallGroup.add(trim)
+
+  const eyeMaterial = new MeshStandardMaterial({
+    color: 0xffee9a,
+    emissive: 0xffee9a,
+    emissiveIntensity: 1.4
+  })
+
+  const leftEye = new Mesh(new BoxGeometry(0.12, 0.25, 0.05), eyeMaterial)
+  leftEye.position.set(-0.12, 0.4, 0.22)
   const rightEye = leftEye.clone()
-  rightEye.position.x = 0.25
+  rightEye.position.x = 0.18
   thrallGroup.add(leftEye, rightEye)
 
   scene.add(thrallGroup)

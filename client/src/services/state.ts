@@ -4,6 +4,8 @@ type ResourcePayload = {
   thrallName?: string
   duskenCoin?: number
   bloodShards?: number
+  thrallHp?: number
+  thrallHpMax?: number
 }
 
 type CurrencyDelta = {
@@ -23,6 +25,8 @@ export type HudState = {
   thrallName: string
   duskenCoin: number
   bloodShards: number
+  thrallHp: number
+  thrallHpMax: number
   wave: number
   kills: number
   thrallAlive: boolean
@@ -41,6 +45,8 @@ export const createHudStore = () =>
     thrallName: '[WEREWOLF]',
     duskenCoin: 0,
     bloodShards: 0,
+    thrallHp: 0,
+    thrallHpMax: 0,
     wave: 1,
     kills: 0,
     thrallAlive: true,

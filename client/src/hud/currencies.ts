@@ -24,7 +24,14 @@ export const createHud = (root: HTMLElement, store: StoreApi<HudState>) => {
   thrallName.className = 'hud__name'
   const powerScore = document.createElement('span')
   powerScore.className = 'hud__power'
-  playerInfo.append(thrallName, powerScore)
+  const hpBar = document.createElement('div')
+  hpBar.className = 'hud__hp'
+  const hpFill = document.createElement('div')
+  hpFill.className = 'hud__hpFill'
+  const hpLabel = document.createElement('span')
+  hpLabel.className = 'hud__hpLabel'
+  hpBar.append(hpFill, hpLabel)
+  playerInfo.append(thrallName, powerScore, hpBar)
 
   playerCard.append(avatar, playerInfo)
 
@@ -128,6 +135,10 @@ export const createHud = (root: HTMLElement, store: StoreApi<HudState>) => {
     } else {
       pendingSync.textContent = 'Balances synced'
     }
+    const thrallHpMax = Math.max(1, state.thrallHpMax)
+    const thrallHpRatio = state.thrallHp / thrallHpMax
+    hpFill.style.width = `${Math.max(0, Math.min(100, thrallHpRatio * 100))}%`
+    hpLabel.textContent = `${Math.round(state.thrallHp)}/${Math.round(thrallHpMax)} HP`
     const energyPercent = Math.min(100, (state.kills % 40) * 2.5 + (state.pendingDuskenCoin % 20))
     energyFill.style.width = `${energyPercent}%`
     slotElements.forEach((slot, index) => {

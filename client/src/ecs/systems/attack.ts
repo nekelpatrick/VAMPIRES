@@ -8,6 +8,7 @@ import {
   ActionPoints,
   Faction,
   Health,
+  Position,
   Reward,
   Stats,
   Target,
@@ -38,6 +39,13 @@ export const createAttackSystem = (
       if (!target || Health.current[target] <= 0) {
         continue
       }
+      const dx = Position.x[target] - Position.x[entity]
+      const dz = Position.z[target] - Position.z[entity]
+      const distance = Math.hypot(dx, dz)
+      const meleeRange = Faction.side[entity] === 0 ? 0.7 : 0.6
+      if (distance > meleeRange) {
+        continue
+      }
 
       const baseDamage = computeDamage(Stats.attack[entity], Stats.defense[target])
       const roll = world.combat.rng.nextFloat()
@@ -54,6 +62,10 @@ export const createAttackSystem = (
         const thrallMax = Health.max[target] || 1
         const ratio = thrallHealth / thrallMax
         thrall.setEyeGlow(0.4 + ratio)
+        hudStore.getState().setResources({
+          thrallHp: thrallHealth,
+          thrallHpMax: thrallMax
+        })
       }
 
       if (Health.current[target] > 0) {
