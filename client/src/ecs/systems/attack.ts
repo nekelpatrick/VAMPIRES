@@ -26,7 +26,7 @@ export const createAttackSystem = (
   thrall: ThrallInstance,
   hordeVisuals: HordeVisuals
 ) => {
-  const attackQuery = defineQuery([ActionPoints, Target, Stats, Health, Faction])
+  const attackQuery = defineQuery([ActionPoints, Target, Stats, Health, Faction, Position])
   const thrallQuery = defineQuery([ThrallTag, Health])
 
   return () => {

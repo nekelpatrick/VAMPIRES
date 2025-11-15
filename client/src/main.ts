@@ -93,7 +93,7 @@ const animate = (now: number) => {
 
   ticker.update(deltaSeconds)
   movementSystem(deltaSeconds)
-  updateCameraFocus(thrall.mesh.position.x * 0.4)
+  updateCameraFocus(thrall.mesh.position.x)
   animationSystem(deltaSeconds)
   renderer.render(scene, camera)
 

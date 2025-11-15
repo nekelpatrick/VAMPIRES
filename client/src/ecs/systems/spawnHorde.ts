@@ -70,11 +70,12 @@ export const createSpawnHordeSystem = (
     addComponent(world, Velocity, entity)
 
     const spawnSide = world.combat.rng.nextFloat() > 0.5 ? 1 : -1
-    const offsetX = world.combat.rng.range(0.5, 2.5)
+    const offsetX = world.combat.rng.range(-0.5, 3.5)
     const spawnZ = world.combat.rng.range(-2.5, 2.5)
     const height = world.combat.rng.range(0, 0.8)
 
-    Position.x[entity] = spawnSide * (4.5 + offsetX)
+    const spawnX = spawnSide * (2.2 + Math.abs(offsetX))
+    Position.x[entity] = spawnX
     Position.y[entity] = -0.6 + height * 0.5
     Position.z[entity] = spawnZ
 
@@ -100,12 +101,7 @@ export const createSpawnHordeSystem = (
     Reward.duskenCoin[entity] = reward.duskenCoin
     Reward.bloodShards[entity] = reward.bloodShards
 
-    hordeVisuals.spawn(entity, {
-      elite: isElite,
-      x: Position.x[entity],
-      z: Position.z[entity],
-      height: height * 0.5
-    })
+    hordeVisuals.spawn(entity, { elite: isElite, x: spawnX, z: spawnZ, height: height * 0.5 })
     world.combat.waveBudget.spawned += 1
     world.combat.phase = 'fighting'
   }
