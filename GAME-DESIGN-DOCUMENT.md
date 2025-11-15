@@ -2,7 +2,7 @@ Below is the **fully rebuilt**, **complete**, and **detailed** Game Design Docum
 
 - Your final tech stack
   **→ Client: Open Web Platform (Three.js + Rapier + bitecs ECS)**
-  **→ Backend: Go (Golang) with PostgreSQL + Redis + S3/MinIO)**
+  **→ Backend: Fastify (Node.js) with PostgreSQL + Redis + S3/MinIO**
 - Your canonical variables:
   `[MOBILE]`, `[GAIN MONEY]`, `[THRALL]`, `[PLAYER]`, `[VAMPIRE]`, `[WEREWOLF]`, `[HORDE]`, `[CLAN]`,
   `[BATTLEFIELD]`, `[NPC]`, `[DEATH]`, `[STRONGER]`, `[TRHALL]`, `[DUSKEN COIN]`,
