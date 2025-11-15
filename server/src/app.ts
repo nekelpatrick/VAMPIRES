@@ -37,7 +37,7 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
       ],
       servers: [
         { url: env.BASE_URL, description: 'Public Gateway' },
-        { url: `http://${env.APP_HOST}:${env.APP_PORT}`, description: 'Local' }
+        { url: `http://localhost:${env.APP_PORT}`, description: 'Local' }
       ]
     }
   })
