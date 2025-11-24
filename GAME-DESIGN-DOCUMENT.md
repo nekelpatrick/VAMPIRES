@@ -1,7 +1,7 @@
 Below is the **fully rebuilt**, **complete**, and **detailed** Game Design Document, fully aligned with:
 
 - Your final tech stack
-  **→ Client: Open Web Platform (Three.js + Rapier + bitecs ECS)**
+  **→ Client: Unity (C#) — targeting iOS, Android, and WebGL**
   **→ Backend: Fastify (Node.js) with PostgreSQL + Redis + S3/MinIO**
 - Your canonical variables:
   `[MOBILE]`, `[GAIN MONEY]`, `[THRALL]`, `[PLAYER]`, `[VAMPIRE]`, `[WEREWOLF]`, `[HORDE]`, `[CLAN]`,
@@ -18,13 +18,13 @@ This is your **authoritative full GDD v1**.
 
 # **VAMPIRES AND WEREWOLVES — THE NINE CIRCLES**
 
-### **Full Game Design Document (Web + Mobile)**
+### **Full Game Design Document (Unity — Mobile + WebGL)**
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # 1. EXECUTIVE SUMMARY
 
-**Vampires and Werewolves — The Nine Circles** is a **[MOBILE] web-first idle RPG** where the [PLAYER]—a newly awakened [VAMPIRE]—commands autonomous [THRALL] units (starting with a [WEREWOLF]) who fight endless [HORDE] waves inside a 3D side-view battlefield.
+**Vampires and Werewolves — The Nine Circles** is a **[MOBILE]-first idle RPG** where the [PLAYER]—a newly awakened [VAMPIRE]—commands autonomous [THRALL] units (starting with a [WEREWOLF]) who fight endless [HORDE] waves inside a 3D side-view battlefield.
 Combat is **automatic**, **continuous**, and **spectacle-driven**, with gore-heavy animations that make the idle loop visually **[MESMERIZING]** and **[ADDICTIVE]**.
 
 Players collect **[DUSKEN COIN]** (soft currency) and **[BLOOD SHARDS]** (premium currency), upgrade their [THRALL]s, enter PvP duels, survive [DEATH], and participate in clan-based seasonal conflicts.
@@ -59,9 +59,9 @@ Monetization centers on purchases, cosmetics, revives, PvP convenience, and an o
 
    - A premium layer built for value and identity: **[ASHEN ONE]** subscription, avatar generation, cosmetics, and VIP perks.
 
-7. **Mobile-First Web Technology**
+7. **Mobile-First Unity Technology**
 
-   - Smooth, performant WebGL-based 3D in Three.js with ECS logic and server authoritative combat.
+   - Smooth, performant 3D in Unity with MonoBehaviour/ECS logic and server authoritative combat.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -107,11 +107,11 @@ The starter [THRALL] is always the **[WEREWOLF]**.
 
 ## 4.2 The [BATTLEFIELD]
 
-- A 3D side-view arena using Three.js.
+- A 3D side-view arena built in Unity.
 - Infinite waves of enemies.
-- Instanced using ECS to keep performance stable.
-- Visuals: rotating layers of fog, silhouettes, embers, blood particle systems.
-- Players will see many [NPC]s and other [PLAYER]s’ thralls marching beside them.
+- Instanced using GPU Instancing and object pooling to keep performance stable.
+- Visuals: rotating layers of fog, silhouettes, embers, blood particle systems (VFX Graph).
+- Players will see many [NPC]s and other [PLAYER]s' thralls marching beside them.
 
 ## 4.3 [HORDE] AI (ENEMIES)
 
@@ -237,35 +237,37 @@ Revenue driver for **[GAIN MONEY]**.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# 9. TECHNICAL DESIGN (WEB CLIENT)
+# 9. TECHNICAL DESIGN (UNITY CLIENT)
 
 ### 9.1 Core Technologies
 
-- **Three.js** → rendering
-- **bitecs** → ECS for performant entity simulation
-- **Rapier** → physics (cosmetic only)
-- **TypeScript** → typed game logic
-- **Web Workers** → background simulation (optional)
-- **IndexedDB** → local caching
+- **Unity 2022 LTS** → game engine (iOS, Android, WebGL builds)
+- **C#** → typed game logic
+- **UniTask** → async operations without coroutine overhead
+- **Unity Physics / Rigidbody** → cosmetic physics (knockbacks, ragdolls)
+- **Addressables** → asset management and streaming
+- **PlayerPrefs / local file** → local caching
 
 ### 9.2 Core Systems
 
-- **ECS Entities:** Thrall, Enemy, Boss, VFX particle, DamageNumber
-- **Systems:** Movement, Attack, AnimationSync, VFX, HPBarRendering
-- **Physics:** Rapier world used for ragdolls / cosmetic knockbacks
+- **Prefabs:** Thrall, Enemy, Boss, VFX, DamageNumber
+- **MonoBehaviour Systems:** ThrallController, HordeSpawner, CombatManager, HPBarUI
+- **ScriptableObjects:** ThrallStats, EnemyConfig, WaveDefinitions
+- **Animator:** State machines for attack patterns, idle, death
 
 ### 9.3 Rendering Optimizations
 
-- Instanced meshes for hordes
-- GPU particles
-- Object pooling
-- Frustum culling (side-view simplifies this)
+- GPU Instancing for hordes
+- VFX Graph for particles (blood, embers, fog)
+- Object pooling via custom pool manager
+- LOD Groups for 3D models
+- URP (Universal Render Pipeline) for mobile performance
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # 10. TECHNICAL DESIGN (NODE BACKEND)
 
-Fastify is one of the most solid, production-hardened choices for a Node.js game backend today: it is actively maintained by contributors who also support Node core, is battle-tested by companies like NearForm, Microsoft, and Platformatic, and offers frequent patch releases with a stable API surface. Its lightweight, schema-driven foundation sustains top-tier throughput without hiding the routing, lifecycle, or plugin controls engineers expect. The native TypeScript definitions and existing tRPC adapters let us share types with the Three.js client cleanly, avoiding custom glue while staying lighter than decorator-heavy frameworks such as NestJS. Operational reliability features—JSON schema validation, logging hooks, graceful shutdown, HTTP/2/WebSocket support, and plugin isolation—make it straightforward to run behind load balancers, capture observability, and execute zero-downtime deploys. In short, Fastify provides a dependable, well-supported base that only grows more complex when we opt in, aligning with our requirement for a solid backend without unnecessary bells and whistles.
+Fastify is one of the most solid, production-hardened choices for a Node.js game backend today: it is actively maintained by contributors who also support Node core, is battle-tested by companies like NearForm, Microsoft, and Platformatic, and offers frequent patch releases with a stable API surface. Its lightweight, schema-driven foundation sustains top-tier throughput without hiding the routing, lifecycle, or plugin controls engineers expect. Operational reliability features—JSON schema validation, logging hooks, graceful shutdown, HTTP/2/WebSocket support, and plugin isolation—make it straightforward to run behind load balancers, capture observability, and execute zero-downtime deploys. The Unity client communicates via REST endpoints and WebSocket for real-time events (battle results, PvP notifications). In short, Fastify provides a dependable, well-supported base that only grows more complex when we opt in, aligning with our requirement for a solid backend without unnecessary bells and whistles.
 
 ### 10.1 Services
 
@@ -409,35 +411,35 @@ damage = max(1, attacker.attack - target.defense * 0.5)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# 16. ROADMAP / MILESTONES (WEB + GO)
+# 16. ROADMAP / MILESTONES (UNITY + NODE)
 
 ### M0 — Infra & Skeleton
 
-Monorepo, CI/CD, initial ECS, empty Three.js scene, basic Fastify server.
+Unity project setup (URP, folder structure), Fastify server scaffold, CI/CD pipeline, basic scene with camera.
 
 ### M1 — Idle Combat Core
 
-Thrall model, Horde spawn, ECS logic, particles, server-logged combat.
+Thrall prefab, Horde spawner, basic AI movement, VFX particles, HUD showing [DUSKEN COIN] & [BLOOD SHARDS].
 
 ### M2 — Deterministic Combat (Node.js)
 
-ResolveBattle implementation + replay sync.
+ResolveBattle implementation + replay sync with Unity client via REST/WebSocket.
 
 ### M3 — PvP + Resurrection
 
-Matchmaker, PvP queue, death state, revival mechanics.
+Matchmaker, PvP queue, death state, revival mechanics, Unity UI flows.
 
 ### M4 — Economy & Monetization
 
-[DUSKEN COIN], [BLOOD SHARDS], subscription tier, shop.
+[DUSKEN COIN], [BLOOD SHARDS], subscription tier, shop UI in Unity.
 
 ### M5 — Polish
 
-Gore VFX, deeper abilities, clan system, avatar generation.
+Gore VFX (VFX Graph), deeper abilities, clan system, avatar generation pipeline.
 
 ### M6 — Soft Launch
 
-Analytics, A/B testing for monetization, performance tuning.
+Analytics (Unity Analytics / Firebase), A/B testing for monetization, performance tuning across iOS/Android/WebGL.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -455,20 +457,21 @@ Analytics, A/B testing for monetization, performance tuning.
 
 # 18. RISKS & MITIGATION
 
-| Risk                     | Mitigation                                               |
-| ------------------------ | -------------------------------------------------------- |
-| Low FPS on mobile        | ECS optimization, instancing, LOD, gore intensity slider |
-| Perceived pay-to-win     | Cosmetic-first monetization; limit stat differences      |
-| Server combat cost       | Worker autoscaling, Redis queue batching                 |
-| Large bundle size        | Dynamic imports, model compression, asset streaming      |
-| Abusive PvP exploitation | Matchmaking variance + cooldowns                         |
+| Risk                     | Mitigation                                                        |
+| ------------------------ | ----------------------------------------------------------------- |
+| Low FPS on mobile        | GPU Instancing, LOD Groups, URP, gore intensity slider            |
+| Perceived pay-to-win     | Cosmetic-first monetization; limit stat differences               |
+| Server combat cost       | Worker autoscaling, Redis queue batching                          |
+| Large build size         | Addressables, model compression, asset streaming, texture atlases |
+| Abusive PvP exploitation | Matchmaking variance + cooldowns                                  |
+| WebGL limitations        | Fallback to native mobile builds; optimize shader complexity      |
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # 19. IMMEDIATE DEVELOPMENT ACTIONS (TO START THE PROJECT)
 
-1. **Create monorepo** with `client/` and `server/` folders + CI pipeline.
+1. **Set up Unity project** with URP, folder structure (`Assets/Scripts`, `Assets/Prefabs`, `Assets/ScriptableObjects`), and basic scene.
 2. **Implement Node combat worker prototype** with deterministic RNG + event logs.
-3. **Create first Three.js scene**: side-view camera + basic thrall mesh + ECS movement + HUD showing [DUSKEN COIN] & [BLOOD SHARDS].
+3. **Create first Unity scene**: side-view camera + basic thrall prefab + idle movement + HUD canvas showing [DUSKEN COIN] & [BLOOD SHARDS].
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
