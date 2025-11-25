@@ -393,7 +393,7 @@ public class GothicHUD : MonoBehaviour
     {
         currentWave = wave;
         enemiesKilledInWave = 0;
-        enemiesInWave = 3 + wave;
+        enemiesInWave = hordeSpawner != null ? hordeSpawner.GetTotalEnemiesInWave() : 5 + wave * 2;
 
         if (waveText != null)
         {

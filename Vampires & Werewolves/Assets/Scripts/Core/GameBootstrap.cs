@@ -12,6 +12,7 @@ public static class GameBootstrap
 
         Debug.Log("[Vampires] Bootstrapping The Nine Circles...");
 
+        CleanupOldObjects();
         SetupCamera();
         SetupManagers();
         SetupAtmosphere();
@@ -21,6 +22,35 @@ public static class GameBootstrap
         SetupVFXSystems();
 
         Debug.Log("[Vampires] Welcome to the [BATTLEFIELD]. The [HORDE] awaits!");
+    }
+
+    static void CleanupOldObjects()
+    {
+        string[] objectsToClean = {
+            "SceneBootstrap",
+            "[Managers]",
+            "[BATTLEFIELD]",
+            "[Atmosphere]",
+            "[HUD]",
+            "[VFX]",
+            "Floor",
+            "SpawnPoint"
+        };
+
+        foreach (string name in objectsToClean)
+        {
+            GameObject obj = GameObject.Find(name);
+            if (obj != null)
+            {
+                Object.Destroy(obj);
+            }
+        }
+
+        GameObject existingThrall = GameObject.FindWithTag("Player");
+        if (existingThrall != null)
+        {
+            Object.Destroy(existingThrall);
+        }
     }
 
     static void SetupCamera()
@@ -33,95 +63,43 @@ public static class GameBootstrap
         cam.transform.position = new Vector3(0, 1.5f, -10);
         cam.backgroundColor = new Color(0.02f, 0.01f, 0.02f);
 
-        cam.gameObject.AddComponent<CameraEffects>();
+        if (cam.GetComponent<CameraEffects>() == null)
+        {
+            cam.gameObject.AddComponent<CameraEffects>();
+        }
     }
 
     static void SetupManagers()
     {
-        GameObject oldManagers = GameObject.Find("[Managers]");
-        if (oldManagers != null)
-        {
-            Object.Destroy(oldManagers);
-        }
-
         GameObject managers = new GameObject("[Managers]");
-
-        if (managers.GetComponent<GameManager>() == null)
-            managers.AddComponent<GameManager>();
-
-        if (managers.GetComponent<CombatManager>() == null)
-            managers.AddComponent<CombatManager>();
-
-        if (managers.GetComponent<CurrencyManager>() == null)
-            managers.AddComponent<CurrencyManager>();
-
-        if (managers.GetComponent<RewardHandler>() == null)
-            managers.AddComponent<RewardHandler>();
-
-        if (managers.GetComponent<DamageNumberSpawner>() == null)
-            managers.AddComponent<DamageNumberSpawner>();
-
-        if (managers.GetComponent<CoinDropper>() == null)
-            managers.AddComponent<CoinDropper>();
-    }
-
-    static void CleanMissingScripts(GameObject go)
-    {
-        var components = go.GetComponents<Component>();
-        for (int i = components.Length - 1; i >= 0; i--)
-        {
-            if (components[i] == null)
-            {
-                Debug.Log($"[Vampires] Found missing script on {go.name}");
-            }
-        }
+        managers.AddComponent<GameManager>();
+        managers.AddComponent<CombatManager>();
+        managers.AddComponent<CurrencyManager>();
+        managers.AddComponent<RewardHandler>();
+        managers.AddComponent<DamageNumberSpawner>();
+        managers.AddComponent<CoinDropper>();
     }
 
     static void SetupAtmosphere()
     {
-        GameObject atmosphere = GameObject.Find("[Atmosphere]");
-        if (atmosphere == null)
-        {
-            atmosphere = new GameObject("[Atmosphere]");
-        }
-
-        if (atmosphere.GetComponent<AtmosphereSystem>() == null)
-        {
-            atmosphere.AddComponent<AtmosphereSystem>();
-        }
+        GameObject atmosphere = new GameObject("[Atmosphere]");
+        atmosphere.AddComponent<AtmosphereSystem>();
     }
 
     static void SetupBattlefield()
     {
-        GameObject battlefield = GameObject.Find("[BATTLEFIELD]");
-        if (battlefield == null)
-        {
-            battlefield = new GameObject("[BATTLEFIELD]");
-        }
+        GameObject battlefield = new GameObject("[BATTLEFIELD]");
+        battlefield.AddComponent<HordeSpawner>();
 
-        CleanMissingScripts(battlefield);
-
-        if (battlefield.GetComponent<HordeSpawner>() == null)
-        {
-            battlefield.AddComponent<HordeSpawner>();
-        }
-
-        GameObject spawnPoint = GameObject.Find("SpawnPoint");
-        if (spawnPoint == null)
-        {
-            spawnPoint = new GameObject("SpawnPoint");
-            spawnPoint.transform.SetParent(battlefield.transform);
-            spawnPoint.transform.position = new Vector3(8f, 0, 0);
-        }
+        GameObject spawnPoint = new GameObject("SpawnPoint");
+        spawnPoint.transform.SetParent(battlefield.transform);
+        spawnPoint.transform.position = new Vector3(8f, 0, 0);
 
         CreateGoreBattlefloor(battlefield.transform);
     }
 
     static void CreateGoreBattlefloor(Transform parent)
     {
-        GameObject existingFloor = GameObject.Find("Floor");
-        if (existingFloor != null) return;
-
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "Floor";
         floor.transform.SetParent(parent);
@@ -190,15 +168,12 @@ public static class GameBootstrap
 
     static void SetupThrall()
     {
-        GameObject existingThrall = GameObject.FindWithTag("Player");
-        if (existingThrall != null) return;
-
         GameObject thrall = new GameObject("[THRALL] Werewolf");
         thrall.tag = "Player";
         thrall.transform.position = new Vector3(-6, 0, 0);
         thrall.transform.localScale = Vector3.one * 0.5f;
 
-        ThrallController controller = thrall.AddComponent<ThrallController>();
+        thrall.AddComponent<ThrallController>();
         thrall.AddComponent<AttackAnimator>();
 
         UnitVisualFactory.CreateWerewolfVisual(thrall.transform);
@@ -254,32 +229,14 @@ public static class GameBootstrap
 
     static void SetupHUD()
     {
-        GameObject oldHud = GameObject.Find("[HUD]");
-        if (oldHud != null)
-        {
-            Object.Destroy(oldHud);
-        }
-
         GameObject hudRoot = new GameObject("[HUD]");
         hudRoot.AddComponent<GothicHUD>();
     }
 
     static void SetupVFXSystems()
     {
-        GameObject vfxSystems = GameObject.Find("[VFX]");
-        if (vfxSystems == null)
-        {
-            vfxSystems = new GameObject("[VFX]");
-        }
-
-        if (vfxSystems.GetComponent<BloodParticleSystem>() == null)
-        {
-            vfxSystems.AddComponent<BloodParticleSystem>();
-        }
-
-        if (vfxSystems.GetComponent<ScreenEffects>() == null)
-        {
-            vfxSystems.AddComponent<ScreenEffects>();
-        }
+        GameObject vfxSystems = new GameObject("[VFX]");
+        vfxSystems.AddComponent<BloodParticleSystem>();
+        vfxSystems.AddComponent<ScreenEffects>();
     }
 }
