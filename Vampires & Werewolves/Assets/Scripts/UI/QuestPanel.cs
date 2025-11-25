@@ -3,9 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class QuestPanel : MonoBehaviour
+public class QuestPanel : MonoBehaviour, IThemeable
 {
     public static QuestPanel Instance { get; private set; }
+
+    private UITheme Theme => UIThemeManager.Theme;
 
     [Header("Panel Settings")]
     private GameObject panelRoot;
@@ -27,6 +29,12 @@ public class QuestPanel : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        UIThemeManager.Instance?.RegisterElement(this);
+    }
+
+    public void ApplyTheme(UITheme theme)
+    {
     }
 
     void Start()
@@ -274,6 +282,8 @@ public class QuestPanel : MonoBehaviour
 
     void OnDestroy()
     {
+        UIThemeManager.Instance?.UnregisterElement(this);
+
         if (questManager != null)
         {
             questManager.OnQuestProgress -= RefreshQuest;

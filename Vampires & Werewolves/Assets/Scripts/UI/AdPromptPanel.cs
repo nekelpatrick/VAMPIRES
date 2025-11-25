@@ -3,9 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class AdPromptPanel : MonoBehaviour
+public class AdPromptPanel : MonoBehaviour, IThemeable
 {
     public static AdPromptPanel Instance { get; private set; }
+
+    private UITheme Theme => UIThemeManager.Theme;
 
     [Header("Panel Elements")]
     private GameObject canvasRoot;
@@ -34,6 +36,12 @@ public class AdPromptPanel : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        UIThemeManager.Instance?.RegisterElement(this);
+    }
+
+    public void ApplyTheme(UITheme theme)
+    {
     }
 
     void Start()
@@ -329,6 +337,8 @@ public class AdPromptPanel : MonoBehaviour
 
     void OnDestroy()
     {
+        UIThemeManager.Instance?.UnregisterElement(this);
+
         AdRewardManager adManager = AdRewardManager.Instance;
         if (adManager != null)
         {

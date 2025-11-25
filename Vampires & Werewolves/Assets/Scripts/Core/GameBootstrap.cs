@@ -18,6 +18,7 @@ public static class GameBootstrap
         SetupEventSystem();
         SetupCamera();
         SetupManagers();
+        SetupUITheme();
         SetupMobileUI();
         SetupAtmosphere();
         SetupBattlefield();
@@ -162,6 +163,12 @@ public static class GameBootstrap
         managers.AddComponent<RewardHandler>();
         managers.AddComponent<DamageNumberSpawner>();
         managers.AddComponent<CoinDropper>();
+    }
+
+    static void SetupUITheme()
+    {
+        GameObject themeManager = new GameObject("[UITheme]");
+        themeManager.AddComponent<UIThemeManager>();
     }
 
     static void SetupMobileUI()

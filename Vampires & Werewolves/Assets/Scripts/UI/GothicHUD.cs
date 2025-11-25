@@ -3,9 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class GothicHUD : MonoBehaviour
+public class GothicHUD : MonoBehaviour, IThemeable
 {
     public static GothicHUD Instance { get; private set; }
+
+    private UITheme Theme => UIThemeManager.Theme;
 
     public event Action<int> OnComboChanged;
 
@@ -58,6 +60,40 @@ public class GothicHUD : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        UIThemeManager.Instance?.RegisterElement(this);
+    }
+
+    public void ApplyTheme(UITheme theme)
+    {
+        if (theme == null) return;
+
+        if (powerScoreText != null)
+            powerScoreText.color = theme.textGold;
+
+        if (levelText != null)
+            levelText.color = theme.textAccent;
+
+        if (xpBarFill != null)
+            xpBarFill.color = theme.fillXP;
+
+        if (thrallHealthFill != null)
+            thrallHealthFill.color = theme.fillHealth;
+
+        if (comboFill != null)
+            comboFill.color = theme.fillCombo;
+
+        if (waveText != null)
+            waveText.color = theme.textGold;
+
+        if (killCountText != null)
+            killCountText.color = theme.textBlood;
+
+        if (duskenText != null)
+            duskenText.color = theme.textGold;
+
+        if (shardsText != null)
+            shardsText.color = theme.textBlood;
     }
 
     void Start()
@@ -1064,10 +1100,14 @@ public class GothicHUD : MonoBehaviour
 
     void AddGothicBorder(Transform parent, Color borderColor)
     {
+        float borderWidth = Theme.borderWidth;
         string[] sides = { "Top", "Bottom", "Left", "Right" };
         Vector2[] anchorsMin = { new Vector2(0, 1), new Vector2(0, 0), new Vector2(0, 0), new Vector2(1, 0) };
         Vector2[] anchorsMax = { new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
-        Vector2[] sizes = { new Vector2(0, 3), new Vector2(0, 3), new Vector2(3, 0), new Vector2(3, 0) };
+        Vector2[] sizes = { 
+            new Vector2(0, borderWidth), new Vector2(0, borderWidth), 
+            new Vector2(borderWidth, 0), new Vector2(borderWidth, 0) 
+        };
 
         for (int i = 0; i < 4; i++)
         {
@@ -1083,6 +1123,7 @@ public class GothicHUD : MonoBehaviour
 
             Image img = border.AddComponent<Image>();
             img.color = borderColor;
+            img.raycastTarget = false;
         }
     }
 
@@ -1316,6 +1357,8 @@ public class GothicHUD : MonoBehaviour
 
     void OnDestroy()
     {
+        UIThemeManager.Instance?.UnregisterElement(this);
+
         if (currencyManager != null)
             currencyManager.OnCurrencyChanged -= UpdateCurrency;
         if (hordeSpawner != null)

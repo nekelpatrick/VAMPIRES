@@ -11,9 +11,11 @@ public enum ShopTab
     Subscription
 }
 
-public class ShopPanel : MonoBehaviour
+public class ShopPanel : MonoBehaviour, IThemeable
 {
     public static ShopPanel Instance { get; private set; }
+
+    private UITheme Theme => UIThemeManager.Theme;
 
     public event Action OnShopOpened;
     public event Action OnShopClosed;
@@ -46,6 +48,12 @@ public class ShopPanel : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        UIThemeManager.Instance?.RegisterElement(this);
+    }
+
+    public void ApplyTheme(UITheme theme)
+    {
     }
 
     void Start()
