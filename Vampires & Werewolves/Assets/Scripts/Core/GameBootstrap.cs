@@ -26,20 +26,81 @@ public static class GameBootstrap
         SetupAdSystems();
         SetupQuestSystems();
         SetupHUD();
+        SetupDebugOverlay();
 
         Debug.Log("[Vampires] Welcome to the [BATTLEFIELD]. The [HORDE] awaits!");
     }
 
     static void SetupEventSystem()
     {
-        if (Object.FindFirstObjectByType<EventSystem>() != null)
-            return;
+        EventSystem existing = Object.FindFirstObjectByType<EventSystem>();
+        if (existing != null)
+        {
+            Debug.Log($"[Vampires] Found existing EventSystem on '{existing.gameObject.name}', destroying to replace...");
+            Object.DestroyImmediate(existing.gameObject);
+        }
 
-        GameObject eventSystem = new GameObject("[EventSystem]");
-        eventSystem.AddComponent<EventSystem>();
-        eventSystem.AddComponent<InputSystemUIInputModule>();
+        GameObject eventSystemObj = new GameObject("[EventSystem]");
+        EventSystem eventSystem = eventSystemObj.AddComponent<EventSystem>();
+        InputSystemUIInputModule inputModule = eventSystemObj.AddComponent<InputSystemUIInputModule>();
 
-        Debug.Log("[Vampires] EventSystem created for UI input (New Input System)");
+        var inputActions = UnityEngine.InputSystem.InputActionAsset.FromJson(GetDefaultUIActionsJson());
+        inputActions.Enable();
+
+        var uiMap = inputActions.FindActionMap("UI");
+        if (uiMap != null)
+        {
+            uiMap.Enable();
+
+            var pointAction = uiMap.FindAction("Point");
+            var clickAction = uiMap.FindAction("Click");
+            var scrollAction = uiMap.FindAction("ScrollWheel");
+
+            if (pointAction != null)
+            {
+                pointAction.Enable();
+                inputModule.point = UnityEngine.InputSystem.InputActionReference.Create(pointAction);
+            }
+            if (clickAction != null)
+            {
+                clickAction.Enable();
+                inputModule.leftClick = UnityEngine.InputSystem.InputActionReference.Create(clickAction);
+            }
+            if (scrollAction != null)
+            {
+                scrollAction.Enable();
+                inputModule.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(scrollAction);
+            }
+
+            Debug.Log($"[Vampires] UI actions enabled - Point: {pointAction?.enabled}, Click: {clickAction?.enabled}");
+        }
+
+        Debug.Log($"[Vampires] EventSystem created: {eventSystem.name}");
+        Debug.Log($"[Vampires] InputModule: {inputModule.GetType().Name}, enabled: {inputModule.enabled}");
+    }
+
+    static string GetDefaultUIActionsJson()
+    {
+        return @"{
+            ""name"": ""DefaultUIActions"",
+            ""maps"": [{
+                ""name"": ""UI"",
+                ""id"": ""272f6d14-89ba-496f-b7ff-215263d3219f"",
+                ""actions"": [
+                    { ""name"": ""Point"", ""type"": ""PassThrough"", ""id"": ""73b301e9-2b4a-4c42-8b76-ff0d13f3c29a"", ""expectedControlType"": ""Vector2"" },
+                    { ""name"": ""Click"", ""type"": ""PassThrough"", ""id"": ""4faf7dc9-4fb8-4559-b5f1-e8b6c6962e12"", ""expectedControlType"": ""Button"" },
+                    { ""name"": ""ScrollWheel"", ""type"": ""PassThrough"", ""id"": ""0489e84a-4833-4c40-bfae-cea84b696689"", ""expectedControlType"": ""Vector2"" }
+                ],
+                ""bindings"": [
+                    { ""path"": ""<Pointer>/position"", ""action"": ""Point"" },
+                    { ""path"": ""<Mouse>/leftButton"", ""action"": ""Click"" },
+                    { ""path"": ""<Pen>/tip"", ""action"": ""Click"" },
+                    { ""path"": ""<Touchscreen>/touch*/press"", ""action"": ""Click"" },
+                    { ""path"": ""<Touchscreen>/primaryTouch/position"", ""action"": ""Point"" },
+                    { ""path"": ""<Mouse>/scroll"", ""action"": ""ScrollWheel"" }
+                ]
+            }]
+        }";
     }
 
     static void CleanupOldObjects()
@@ -55,6 +116,7 @@ public static class GameBootstrap
             "[VFX]",
             "[ADS]",
             "[QUESTS]",
+            "[UIDebug]",
             "Floor",
             "SpawnPoint"
         };
@@ -282,5 +344,14 @@ public static class GameBootstrap
         questSystems.AddComponent<DailyQuestManager>();
         questSystems.AddComponent<QuestPanel>();
         questSystems.AddComponent<QuestNotification>();
+    }
+
+    static void SetupDebugOverlay()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        GameObject debugObj = new GameObject("[UIDebug]");
+        debugObj.AddComponent<UIDebugOverlay>();
+        Debug.Log("[Vampires] UI Debug overlay enabled (Press F1 to toggle)");
+#endif
     }
 }

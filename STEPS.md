@@ -20,7 +20,7 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
 - [x] **M3 — PvP + Resurrection**  
        Matchmaker queues, `[DEATH]` handling, revival flows, Unity UI screens.
 
-- [ ] **M4 — Economy & Monetization**  
+- [x] **M4 — Economy & Monetization**  
        `[DUSKEN COIN]`, `[BLOOD SHARDS]`, `[ASHEN ONE]` subscription + shop UI in Unity.
 
 - [ ] **M5 — Polish**  

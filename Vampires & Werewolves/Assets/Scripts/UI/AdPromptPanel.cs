@@ -8,6 +8,7 @@ public class AdPromptPanel : MonoBehaviour
     public static AdPromptPanel Instance { get; private set; }
 
     [Header("Panel Elements")]
+    private GameObject canvasRoot;
     private GameObject panelRoot;
     private TextMeshProUGUI titleText;
     private TextMeshProUGUI descriptionText;
@@ -52,8 +53,9 @@ public class AdPromptPanel : MonoBehaviour
         bool isMobile = MobileUIScaler.Instance != null && MobileUIScaler.Instance.IsMobile;
         float scaleFactor = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.ScaleFactor : 1f;
 
-        GameObject canvasObj = new GameObject("AdPromptCanvas");
-        canvasObj.transform.SetParent(transform);
+        canvasRoot = new GameObject("AdPromptCanvas");
+        canvasRoot.transform.SetParent(transform);
+        GameObject canvasObj = canvasRoot;
 
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -63,7 +65,7 @@ public class AdPromptPanel : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = isMobile ? 0.5f : 0.5f;
+        scaler.matchWidthOrHeight = isMobile ? 0.5f : 1f;
 
         canvasObj.AddComponent<GraphicRaycaster>();
 
@@ -227,6 +229,8 @@ public class AdPromptPanel : MonoBehaviour
 
         UpdateContent(type);
 
+        if (canvasRoot != null)
+            canvasRoot.SetActive(true);
         panelRoot.SetActive(true);
         Time.timeScale = 0f;
     }
@@ -307,7 +311,8 @@ public class AdPromptPanel : MonoBehaviour
     void HidePanel()
     {
         isShowing = false;
-        panelRoot.SetActive(false);
+        if (canvasRoot != null)
+            canvasRoot.SetActive(false);
         Time.timeScale = 1f;
     }
 

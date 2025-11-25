@@ -135,6 +135,11 @@ public class ThrallController : CombatEntity
         ActionPoints = 0;
         gameObject.SetActive(true);
 
+        if (combatManager != null)
+        {
+            combatManager.ResumeCombat();
+        }
+
         ScreenEffects.Instance?.FlashGreen(0.3f);
         Debug.Log("[Thrall] Revived!");
     }

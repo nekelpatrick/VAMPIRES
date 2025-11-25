@@ -26,6 +26,11 @@ public class GothicHUD : MonoBehaviour
     private Button questButton;
     private TextMeshProUGUI questBadge;
 
+    [Header("Shop & Subscription")]
+    private Button shopButton;
+    private ShopPanel shopPanel;
+    private SubscriptionBanner subscriptionBanner;
+
     private CurrencyManager currencyManager;
     private HordeSpawner hordeSpawner;
     private CombatManager combatManager;
@@ -227,6 +232,8 @@ public class GothicHUD : MonoBehaviour
         CreateComboMeter(canvasObj.transform);
         CreateAdButtons(canvasObj.transform);
         CreateQuestButton(canvasObj.transform);
+        CreateShopButton(canvasObj.transform);
+        CreateSubscriptionBanner(canvasObj.transform);
     }
 
     void CreateAdButtons(Transform parent)
@@ -307,8 +314,9 @@ public class GothicHUD : MonoBehaviour
         RectTransform shadowRect = shadowObj.AddComponent<RectTransform>();
         shadowRect.anchorMin = Vector2.zero;
         shadowRect.anchorMax = Vector2.one;
-        shadowRect.offsetMin = new Vector2(2, -2);
-        shadowRect.offsetMax = new Vector2(2, -2);
+        shadowRect.offsetMin = new Vector2(3, -3);
+        shadowRect.offsetMax = new Vector2(3, -3);
+        shadowRect.anchoredPosition = new Vector2(2, -2);
         shadowObj.transform.SetAsFirstSibling();
 
         TextMeshProUGUI shadowText = shadowObj.AddComponent<TextMeshProUGUI>();
@@ -394,8 +402,9 @@ public class GothicHUD : MonoBehaviour
         RectTransform shadowRect = shadowObj.AddComponent<RectTransform>();
         shadowRect.anchorMin = Vector2.zero;
         shadowRect.anchorMax = Vector2.one;
-        shadowRect.offsetMin = new Vector2(2, -2);
-        shadowRect.offsetMax = new Vector2(2, -2);
+        shadowRect.offsetMin = new Vector2(3, -3);
+        shadowRect.offsetMax = new Vector2(3, -3);
+        shadowRect.anchoredPosition = new Vector2(2, -2);
         shadowObj.transform.SetAsFirstSibling();
 
         TextMeshProUGUI shadowText = shadowObj.AddComponent<TextMeshProUGUI>();
@@ -452,6 +461,160 @@ public class GothicHUD : MonoBehaviour
         questBadge.raycastTarget = false;
 
         badgeObj.SetActive(false);
+    }
+
+    void CreateShopButton(Transform parent)
+    {
+        float buttonSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetButtonSize(120f) : 120f;
+        float fontSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetFontSize(48f) : 48f;
+
+        GameObject shopBtn = new GameObject("ShopButton");
+        shopBtn.transform.SetParent(parent);
+
+        RectTransform btnRect = shopBtn.AddComponent<RectTransform>();
+        btnRect.anchorMin = new Vector2(1, 0.5f);
+        btnRect.anchorMax = new Vector2(1, 0.5f);
+        btnRect.pivot = new Vector2(1, 0.5f);
+        btnRect.anchoredPosition = new Vector2(-25, -140);
+        btnRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+
+        GameObject borderObj = new GameObject("Border");
+        borderObj.transform.SetParent(shopBtn.transform);
+        RectTransform borderRect = borderObj.AddComponent<RectTransform>();
+        borderRect.anchorMin = Vector2.zero;
+        borderRect.anchorMax = Vector2.one;
+        borderRect.offsetMin = new Vector2(-4, -4);
+        borderRect.offsetMax = new Vector2(4, 4);
+        borderObj.transform.SetAsFirstSibling();
+
+        Image borderImg = borderObj.AddComponent<Image>();
+        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.raycastTarget = false;
+
+        Image btnBg = shopBtn.AddComponent<Image>();
+        btnBg.color = new Color(0.5f, 0.35f, 0.15f, 0.95f);
+        btnBg.raycastTarget = true;
+
+        shopButton = shopBtn.AddComponent<Button>();
+        shopButton.onClick.AddListener(OnShopButtonClicked);
+
+        ColorBlock colors = shopButton.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f);
+        shopButton.colors = colors;
+
+        GameObject iconObj = new GameObject("Icon");
+        iconObj.transform.SetParent(shopBtn.transform);
+        RectTransform iconRect = iconObj.AddComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(8, 8);
+        iconRect.offsetMax = new Vector2(-8, -8);
+
+        GameObject shadowObj = new GameObject("Shadow");
+        shadowObj.transform.SetParent(iconObj.transform);
+        RectTransform shadowRect = shadowObj.AddComponent<RectTransform>();
+        shadowRect.anchorMin = Vector2.zero;
+        shadowRect.anchorMax = Vector2.one;
+        shadowRect.offsetMin = new Vector2(2, -2);
+        shadowRect.offsetMax = new Vector2(2, -2);
+        shadowObj.transform.SetAsFirstSibling();
+
+        TextMeshProUGUI shadowText = shadowObj.AddComponent<TextMeshProUGUI>();
+        shadowText.text = "S";
+        shadowText.fontSize = fontSize;
+        shadowText.fontStyle = FontStyles.Bold;
+        shadowText.alignment = TextAlignmentOptions.Center;
+        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.enableAutoSizing = true;
+        shadowText.fontSizeMin = 28;
+        shadowText.fontSizeMax = fontSize;
+        shadowText.raycastTarget = false;
+
+        TextMeshProUGUI iconText = iconObj.AddComponent<TextMeshProUGUI>();
+        iconText.text = "S";
+        iconText.fontSize = fontSize;
+        iconText.fontStyle = FontStyles.Bold;
+        iconText.alignment = TextAlignmentOptions.Center;
+        iconText.color = new Color(1f, 0.85f, 0.4f);
+        iconText.enableAutoSizing = true;
+        iconText.fontSizeMin = 28;
+        iconText.fontSizeMax = fontSize;
+        iconText.raycastTarget = false;
+
+        GameObject labelObj = new GameObject("Label");
+        labelObj.transform.SetParent(shopBtn.transform);
+        RectTransform labelRect = labelObj.AddComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0.5f, 0);
+        labelRect.anchorMax = new Vector2(0.5f, 0);
+        labelRect.pivot = new Vector2(0.5f, 1);
+        labelRect.anchoredPosition = new Vector2(0, -8);
+        labelRect.sizeDelta = new Vector2(140, 30);
+
+        TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+        labelText.text = "SHOP";
+        labelText.fontSize = 18;
+        labelText.fontStyle = FontStyles.Bold;
+        labelText.alignment = TextAlignmentOptions.Center;
+        labelText.color = new Color(1f, 0.85f, 0.3f);
+        labelText.raycastTarget = false;
+    }
+
+    void OnShopButtonClicked()
+    {
+        Debug.Log("[GothicHUD] Shop button clicked!");
+
+        if (shopPanel == null)
+        {
+            shopPanel = ShopPanel.Instance;
+        }
+
+        if (shopPanel == null)
+        {
+            GameObject shopObj = new GameObject("ShopPanel");
+            shopObj.transform.SetParent(transform);
+            shopPanel = shopObj.AddComponent<ShopPanel>();
+            shopPanel.Initialize();
+            Debug.Log("[GothicHUD] ShopPanel created and initialized");
+        }
+
+        if (shopPanel != null)
+        {
+            shopPanel.Toggle();
+        }
+        else
+        {
+            Debug.LogWarning("[GothicHUD] ShopPanel not available");
+        }
+    }
+
+    void CreateSubscriptionBanner(Transform parent)
+    {
+        if (subscriptionBanner == null)
+        {
+            GameObject bannerObj = new GameObject("SubscriptionBanner");
+            bannerObj.transform.SetParent(parent);
+            subscriptionBanner = bannerObj.AddComponent<SubscriptionBanner>();
+        }
+
+        subscriptionBanner.CreateBanner(parent);
+        subscriptionBanner.OnSubscribeClicked += OnSubscribeBannerClicked;
+    }
+
+    void OnSubscribeBannerClicked()
+    {
+        Debug.Log("[GothicHUD] Subscription banner clicked!");
+
+        if (shopPanel == null)
+        {
+            shopPanel = ShopPanel.Instance;
+        }
+
+        if (shopPanel != null)
+        {
+            shopPanel.Show();
+        }
     }
 
     void CreateTopBar(Transform parent)

@@ -61,7 +61,7 @@ public class QuestPanel : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = isMobile ? 0.5f : 0.5f;
+        scaler.matchWidthOrHeight = isMobile ? 0.5f : 1f;
 
         canvasObj.AddComponent<GraphicRaycaster>();
 

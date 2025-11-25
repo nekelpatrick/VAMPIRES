@@ -79,7 +79,7 @@ public class MobileUIScaler : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = IsMobile ? 0.5f : 0.5f;
+        scaler.matchWidthOrHeight = IsMobile ? 0.5f : 1f;
 
         float adjustedScale = IsMobile ? ScaleFactor * 1.1f : 1f;
         scaler.referencePixelsPerUnit = 100f / adjustedScale;

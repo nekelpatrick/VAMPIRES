@@ -46,7 +46,7 @@ public class ScreenEffects : MonoBehaviour
         canvas.sortingOrder = 1000;
 
         canvasObj.AddComponent<CanvasScaler>();
-        canvasObj.AddComponent<GraphicRaycaster>().blockingObjects = GraphicRaycaster.BlockingObjects.None;
+        // No GraphicRaycaster - this canvas is for VFX only, shouldn't intercept input
 
         vignetteImage = CreateFullscreenImage(canvasObj.transform, "Vignette");
         vignetteImage.color = new Color(0, 0, 0, 0);

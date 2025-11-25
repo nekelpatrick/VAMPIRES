@@ -5,6 +5,8 @@ import { economyRouter } from '../modules/economy'
 import { playerRouter } from '../modules/player'
 import { pvpRouter } from '../modules/pvp'
 import { questRouter } from '../modules/quests'
+import { shopRouter } from '../modules/shop'
+import { subscriptionRouter } from '../modules/subscription'
 import { thrallRouter } from '../modules/thrall'
 import { CANONICAL_VARIABLES } from '../shared/canonical'
 import { procedure, router } from './core'
@@ -36,8 +38,9 @@ export const appRouter = router({
   economy: economyRouter,
   battle: battleRouter,
   pvp: pvpRouter,
-  quests: questRouter
+  quests: questRouter,
+  shop: shopRouter,
+  subscription: subscriptionRouter
 })
 
 export type AppRouter = typeof appRouter
-
