@@ -13,10 +13,6 @@ public class LevelUpVFX : MonoBehaviour
     [SerializeField] private float particleSpeed = 3f;
     [SerializeField] private float particleSpread = 2f;
 
-    [Header("Flash Settings")]
-    [SerializeField] private float flashDuration = 0.3f;
-    [SerializeField] private Color flashColor = new Color(1f, 0.85f, 0.2f, 0.5f);
-
     [Header("Slow Motion")]
     [SerializeField] private float slowMoDuration = 0.4f;
     [SerializeField] private float slowMoScale = 0.3f;

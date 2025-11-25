@@ -128,9 +128,9 @@ public class ThrallController : CombatEntity
         TriggerAttackEvent();
 
         int baseDamage = CombatMath.ComputeDamage(Stats.attack, target.Stats.defense);
-        int damage = CombatMath.ApplyVariance(baseDamage, 0.25f, Random.value);
+        int damage = CombatMath.ApplyVariance(baseDamage, 0.25f, UnityEngine.Random.value);
 
-        bool isCritical = Random.value < 0.15f;
+        bool isCritical = UnityEngine.Random.value < 0.15f;
         if (isCritical)
         {
             damage = Mathf.RoundToInt(damage * 1.75f);
