@@ -4,6 +4,7 @@ import { battleRouter } from '../modules/battle'
 import { economyRouter } from '../modules/economy'
 import { playerRouter } from '../modules/player'
 import { pvpRouter } from '../modules/pvp'
+import { questRouter } from '../modules/quests'
 import { thrallRouter } from '../modules/thrall'
 import { CANONICAL_VARIABLES } from '../shared/canonical'
 import { procedure, router } from './core'
@@ -34,7 +35,8 @@ export const appRouter = router({
   thrall: thrallRouter,
   economy: economyRouter,
   battle: battleRouter,
-  pvp: pvpRouter
+  pvp: pvpRouter,
+  quests: questRouter
 })
 
 export type AppRouter = typeof appRouter

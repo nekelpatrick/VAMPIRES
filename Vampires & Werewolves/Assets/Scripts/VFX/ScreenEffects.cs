@@ -158,5 +158,23 @@ public class ScreenEffects : MonoBehaviour
     {
         FlashRed(0.15f);
     }
+
+    public void FlashGreen(float intensity = 0.3f)
+    {
+        flashIntensity = intensity;
+        if (flashImage != null)
+        {
+            flashImage.color = new Color(0.2f, 0.9f, 0.3f, intensity);
+        }
+    }
+
+    public void FlashGold(float intensity = 0.3f)
+    {
+        flashIntensity = intensity;
+        if (flashImage != null)
+        {
+            flashImage.color = new Color(1f, 0.85f, 0.2f, intensity);
+        }
+    }
 }
 

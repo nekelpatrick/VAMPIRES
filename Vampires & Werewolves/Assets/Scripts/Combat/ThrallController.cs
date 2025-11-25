@@ -129,6 +129,16 @@ public class ThrallController : CombatEntity
         }
     }
 
+    public void Revive()
+    {
+        CurrentHealth = Stats.maxHealth;
+        ActionPoints = 0;
+        gameObject.SetActive(true);
+
+        ScreenEffects.Instance?.FlashGreen(0.3f);
+        Debug.Log("[Thrall] Revived!");
+    }
+
     void OnDestroy()
     {
         if (combatManager != null)

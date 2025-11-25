@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -5,6 +6,8 @@ using TMPro;
 public class GothicHUD : MonoBehaviour
 {
     public static GothicHUD Instance { get; private set; }
+
+    public event Action<int> OnComboChanged;
 
     [Header("References")]
     private TextMeshProUGUI waveText;
@@ -16,10 +19,19 @@ public class GothicHUD : MonoBehaviour
     private Image waveProgressFill;
     private Image comboFill;
 
+    [Header("Ad & Quest UI")]
+    private Button damageBoostButton;
+    private Image damageBoostGlow;
+    private TextMeshProUGUI boostTimerText;
+    private Button questButton;
+    private TextMeshProUGUI questBadge;
+
     private CurrencyManager currencyManager;
     private HordeSpawner hordeSpawner;
     private CombatManager combatManager;
     private ThrallController thrall;
+    private AdRewardManager adManager;
+    private DailyQuestManager questManager;
 
     private int killCount;
     private int comboCount;
@@ -58,6 +70,79 @@ public class GothicHUD : MonoBehaviour
         {
             thrall = combatManager.GetThrall();
         }
+
+        adManager = AdRewardManager.Instance;
+        questManager = DailyQuestManager.Instance;
+
+        if (adManager != null)
+        {
+            adManager.OnDamageBoostStarted += OnDamageBoostStarted;
+            adManager.OnDamageBoostEnded += OnDamageBoostEnded;
+        }
+
+        if (questManager != null)
+        {
+            questManager.OnQuestCompleted += OnQuestCompleted;
+            questManager.OnQuestClaimed += OnQuestStatusChanged;
+            UpdateQuestBadge();
+        }
+    }
+
+    void OnDamageBoostClicked()
+    {
+        adManager?.RequestDamageBoost((success) =>
+        {
+            if (success)
+            {
+                ScreenEffects.Instance?.FlashGold(0.3f);
+            }
+        });
+    }
+
+    void OnQuestButtonClicked()
+    {
+        QuestPanel.Instance?.Toggle();
+    }
+
+    void OnDamageBoostStarted()
+    {
+        if (damageBoostButton != null)
+        {
+            damageBoostButton.interactable = false;
+            damageBoostButton.GetComponent<Image>().color = new Color(0.2f, 0.6f, 0.2f, 0.9f);
+        }
+    }
+
+    void OnDamageBoostEnded()
+    {
+        if (damageBoostButton != null)
+        {
+            damageBoostButton.interactable = true;
+            damageBoostButton.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 0.9f);
+        }
+        if (boostTimerText != null)
+        {
+            boostTimerText.text = "BOOST";
+        }
+    }
+
+    void OnQuestCompleted(QuestProgress quest)
+    {
+        UpdateQuestBadge();
+    }
+
+    void OnQuestStatusChanged(QuestProgress quest)
+    {
+        UpdateQuestBadge();
+    }
+
+    void UpdateQuestBadge()
+    {
+        if (questBadge == null || questManager == null) return;
+
+        int unclaimed = questManager.GetUnclaimedCount();
+        questBadge.transform.parent.gameObject.SetActive(unclaimed > 0);
+        questBadge.text = unclaimed.ToString();
     }
 
     void CreateHUD()
@@ -82,6 +167,134 @@ public class GothicHUD : MonoBehaviour
         CreateBottomBar(canvasObj.transform);
         CreateKillCounter(canvasObj.transform);
         CreateComboMeter(canvasObj.transform);
+        CreateAdButtons(canvasObj.transform);
+        CreateQuestButton(canvasObj.transform);
+    }
+
+    void CreateAdButtons(Transform parent)
+    {
+        GameObject boostBtn = new GameObject("DamageBoostButton");
+        boostBtn.transform.SetParent(parent);
+
+        RectTransform btnRect = boostBtn.AddComponent<RectTransform>();
+        btnRect.anchorMin = new Vector2(1, 0.5f);
+        btnRect.anchorMax = new Vector2(1, 0.5f);
+        btnRect.pivot = new Vector2(1, 0.5f);
+        btnRect.anchoredPosition = new Vector2(-20, 100);
+        btnRect.sizeDelta = new Vector2(80, 80);
+
+        Image btnBg = boostBtn.AddComponent<Image>();
+        btnBg.color = new Color(0.6f, 0.2f, 0.2f, 0.9f);
+
+        damageBoostButton = boostBtn.AddComponent<Button>();
+        damageBoostButton.onClick.AddListener(OnDamageBoostClicked);
+
+        GameObject glowObj = new GameObject("Glow");
+        glowObj.transform.SetParent(boostBtn.transform);
+        RectTransform glowRect = glowObj.AddComponent<RectTransform>();
+        glowRect.anchorMin = Vector2.zero;
+        glowRect.anchorMax = Vector2.one;
+        glowRect.offsetMin = new Vector2(-10, -10);
+        glowRect.offsetMax = new Vector2(10, 10);
+        glowObj.transform.SetAsFirstSibling();
+
+        damageBoostGlow = glowObj.AddComponent<Image>();
+        damageBoostGlow.color = new Color(1f, 0.3f, 0.3f, 0.4f);
+
+        GameObject iconObj = new GameObject("Icon");
+        iconObj.transform.SetParent(boostBtn.transform);
+        RectTransform iconRect = iconObj.AddComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(10, 10);
+        iconRect.offsetMax = new Vector2(-10, -10);
+
+        TextMeshProUGUI iconText = iconObj.AddComponent<TextMeshProUGUI>();
+        iconText.text = "2x";
+        iconText.fontSize = 28;
+        iconText.fontStyle = FontStyles.Bold;
+        iconText.alignment = TextAlignmentOptions.Center;
+        iconText.color = Color.white;
+
+        GameObject labelObj = new GameObject("Label");
+        labelObj.transform.SetParent(boostBtn.transform);
+        RectTransform labelRect = labelObj.AddComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0.5f, 0);
+        labelRect.anchorMax = new Vector2(0.5f, 0);
+        labelRect.pivot = new Vector2(0.5f, 1);
+        labelRect.anchoredPosition = new Vector2(0, -5);
+        labelRect.sizeDelta = new Vector2(100, 25);
+
+        boostTimerText = labelObj.AddComponent<TextMeshProUGUI>();
+        boostTimerText.text = "BOOST";
+        boostTimerText.fontSize = 14;
+        boostTimerText.alignment = TextAlignmentOptions.Center;
+        boostTimerText.color = new Color(1f, 0.85f, 0.3f);
+    }
+
+    void CreateQuestButton(Transform parent)
+    {
+        GameObject questBtn = new GameObject("QuestButton");
+        questBtn.transform.SetParent(parent);
+
+        RectTransform btnRect = questBtn.AddComponent<RectTransform>();
+        btnRect.anchorMin = new Vector2(1, 0.5f);
+        btnRect.anchorMax = new Vector2(1, 0.5f);
+        btnRect.pivot = new Vector2(1, 0.5f);
+        btnRect.anchoredPosition = new Vector2(-20, 0);
+        btnRect.sizeDelta = new Vector2(80, 80);
+
+        Image btnBg = questBtn.AddComponent<Image>();
+        btnBg.color = new Color(0.3f, 0.5f, 0.2f, 0.9f);
+
+        questButton = questBtn.AddComponent<Button>();
+        questButton.onClick.AddListener(OnQuestButtonClicked);
+
+        GameObject iconObj = new GameObject("Icon");
+        iconObj.transform.SetParent(questBtn.transform);
+        RectTransform iconRect = iconObj.AddComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(10, 10);
+        iconRect.offsetMax = new Vector2(-10, -10);
+
+        TextMeshProUGUI iconText = iconObj.AddComponent<TextMeshProUGUI>();
+        iconText.text = "Q";
+        iconText.fontSize = 36;
+        iconText.fontStyle = FontStyles.Bold;
+        iconText.alignment = TextAlignmentOptions.Center;
+        iconText.color = Color.white;
+
+        GameObject badgeObj = new GameObject("Badge");
+        badgeObj.transform.SetParent(questBtn.transform);
+
+        RectTransform badgeRect = badgeObj.AddComponent<RectTransform>();
+        badgeRect.anchorMin = new Vector2(1, 1);
+        badgeRect.anchorMax = new Vector2(1, 1);
+        badgeRect.pivot = new Vector2(0.5f, 0.5f);
+        badgeRect.anchoredPosition = new Vector2(-5, -5);
+        badgeRect.sizeDelta = new Vector2(30, 30);
+
+        Image badgeBg = badgeObj.AddComponent<Image>();
+        badgeBg.color = new Color(0.9f, 0.2f, 0.2f);
+
+        GameObject badgeText = new GameObject("Text");
+        badgeText.transform.SetParent(badgeObj.transform);
+
+        RectTransform textRect = badgeText.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        questBadge = badgeText.AddComponent<TextMeshProUGUI>();
+        questBadge.text = "0";
+        questBadge.fontSize = 18;
+        questBadge.fontStyle = FontStyles.Bold;
+        questBadge.alignment = TextAlignmentOptions.Center;
+        questBadge.color = Color.white;
+
+        badgeObj.SetActive(false);
     }
 
     void CreateTopBar(Transform parent)
@@ -343,6 +556,35 @@ public class GothicHUD : MonoBehaviour
 
         UpdateThrallHealth();
         UpdateCombo();
+        UpdateBoostUI();
+    }
+
+    void UpdateBoostUI()
+    {
+        if (adManager == null) return;
+
+        if (adManager.IsDamageBoostActive)
+        {
+            float remaining = adManager.DamageBoostTimeRemaining;
+            if (boostTimerText != null)
+            {
+                boostTimerText.text = $"{Mathf.CeilToInt(remaining)}s";
+            }
+        }
+
+        if (damageBoostGlow != null)
+        {
+            bool canOffer = adManager.CanOfferAd(AdType.DamageBoost) && !adManager.IsDamageBoostActive;
+            damageBoostGlow.gameObject.SetActive(canOffer);
+
+            if (canOffer)
+            {
+                float pulse = 0.3f + Mathf.Sin(Time.time * 4f) * 0.15f;
+                Color c = damageBoostGlow.color;
+                c.a = pulse;
+                damageBoostGlow.color = c;
+            }
+        }
     }
 
     void UpdateThrallHealth()
@@ -429,6 +671,8 @@ public class GothicHUD : MonoBehaviour
         UpdateComboText();
         UpdateWaveProgress();
 
+        OnComboChanged?.Invoke(comboCount);
+
         CameraEffects.Instance?.ShakeOnKill();
         ScreenEffects.Instance?.FlashOnKill();
     }
@@ -504,6 +748,16 @@ public class GothicHUD : MonoBehaviour
             currencyManager.OnCurrencyChanged -= UpdateCurrency;
         if (hordeSpawner != null)
             hordeSpawner.OnWaveStarted -= OnWaveStart;
+        if (adManager != null)
+        {
+            adManager.OnDamageBoostStarted -= OnDamageBoostStarted;
+            adManager.OnDamageBoostEnded -= OnDamageBoostEnded;
+        }
+        if (questManager != null)
+        {
+            questManager.OnQuestCompleted -= OnQuestCompleted;
+            questManager.OnQuestClaimed -= OnQuestStatusChanged;
+        }
     }
 }
 

@@ -7,6 +7,7 @@ import { env } from './config/env'
 import type {} from './types/fastify'
 import { battleRoutes } from './server/routes/battle'
 import { pvpRoutes } from './server/routes/pvp'
+import { questRoutes } from './server/routes/quests'
 import { revivalRoutes } from './server/routes/revival'
 import { registerHealthRoutes } from './server/routes/health'
 import { registerSpecRoute } from './server/routes/spec'
@@ -39,7 +40,8 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
         { name: 'Economy', description: '[DUSKEN COIN] and [BLOOD SHARDS] balances' },
         { name: 'battle', description: 'Server-authoritative combat resolution' },
         { name: 'pvp', description: 'PvP matchmaking and battles' },
-        { name: 'revival', description: '[DEATH] and resurrection system' }
+        { name: 'revival', description: '[DEATH] and resurrection system' },
+        { name: 'quests', description: 'Daily quest tracking and rewards' }
       ],
       servers: [
         { url: env.BASE_URL, description: 'Public Gateway' },
@@ -61,6 +63,7 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
   await fastify.register(registerSpecRoute)
   await fastify.register(battleRoutes)
   await fastify.register(pvpRoutes)
+  await fastify.register(questRoutes)
   await fastify.register(revivalRoutes)
 }
 

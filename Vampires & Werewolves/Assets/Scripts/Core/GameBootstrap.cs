@@ -20,6 +20,8 @@ public static class GameBootstrap
         SetupThrall();
         SetupHUD();
         SetupVFXSystems();
+        SetupAdSystems();
+        SetupQuestSystems();
 
         Debug.Log("[Vampires] Welcome to the [BATTLEFIELD]. The [HORDE] awaits!");
     }
@@ -33,6 +35,8 @@ public static class GameBootstrap
             "[Atmosphere]",
             "[HUD]",
             "[VFX]",
+            "[ADS]",
+            "[QUESTS]",
             "Floor",
             "SpawnPoint"
         };
@@ -238,5 +242,21 @@ public static class GameBootstrap
         GameObject vfxSystems = new GameObject("[VFX]");
         vfxSystems.AddComponent<BloodParticleSystem>();
         vfxSystems.AddComponent<ScreenEffects>();
+    }
+
+    static void SetupAdSystems()
+    {
+        GameObject adSystems = new GameObject("[ADS]");
+        adSystems.AddComponent<AdService>();
+        adSystems.AddComponent<AdRewardManager>();
+        adSystems.AddComponent<AdPromptPanel>();
+    }
+
+    static void SetupQuestSystems()
+    {
+        GameObject questSystems = new GameObject("[QUESTS]");
+        questSystems.AddComponent<DailyQuestManager>();
+        questSystems.AddComponent<QuestPanel>();
+        questSystems.AddComponent<QuestNotification>();
     }
 }
