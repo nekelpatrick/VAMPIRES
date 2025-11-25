@@ -14,7 +14,7 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
 - [x] **M1 — Idle Combat Core**  
        Thrall prefab, Horde spawner, basic AI movement, VFX particles, HUD canvas showing `[DUSKEN COIN]` and `[BLOOD SHARDS]`.
 
-- [ ] **M2 — Deterministic Combat (Node.js)**  
+- [x] **M2 — Deterministic Combat (Node.js)**  
        Server battle simulator (ResolveBattle) + replay sync with Unity client via REST/WebSocket.
 
 - [ ] **M3 — PvP + Resurrection**  

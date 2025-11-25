@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { battleRouter } from '../modules/battle'
 import { economyRouter } from '../modules/economy'
 import { playerRouter } from '../modules/player'
 import { thrallRouter } from '../modules/thrall'
@@ -30,7 +31,8 @@ export const appRouter = router({
   diagnostics: diagnosticsRouter,
   player: playerRouter,
   thrall: thrallRouter,
-  economy: economyRouter
+  economy: economyRouter,
+  battle: battleRouter
 })
 
 export type AppRouter = typeof appRouter

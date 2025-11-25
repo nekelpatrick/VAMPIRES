@@ -5,6 +5,7 @@ import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 
 import { env } from './config/env'
 import type {} from './types/fastify'
+import { battleRoutes } from './server/routes/battle'
 import { registerHealthRoutes } from './server/routes/health'
 import { registerSpecRoute } from './server/routes/spec'
 import { registerTrpcPlugin } from './trpc/plugin'
@@ -33,7 +34,8 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
         { name: 'Diagnostics', description: 'Health and readiness endpoints' },
         { name: 'Player', description: 'Player state and progression' },
         { name: 'Thrall', description: '[THRALL] management' },
-        { name: 'Economy', description: '[DUSKEN COIN] and [BLOOD SHARDS] balances' }
+        { name: 'Economy', description: '[DUSKEN COIN] and [BLOOD SHARDS] balances' },
+        { name: 'battle', description: 'Server-authoritative combat resolution' }
       ],
       servers: [
         { url: env.BASE_URL, description: 'Public Gateway' },
@@ -53,6 +55,7 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
   await fastify.register(registerTrpcPlugin)
   await fastify.register(registerHealthRoutes)
   await fastify.register(registerSpecRoute)
+  await fastify.register(battleRoutes)
 }
 
 export default app
