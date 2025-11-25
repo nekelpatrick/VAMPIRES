@@ -288,7 +288,7 @@ public class QuestRowUI : MonoBehaviour
 
     void CreateUI()
     {
-        nameText = CreateText("Name", quest: currentQuest.questName, 20,
+        nameText = CreateText("Name", currentQuest.questName, 20,
             new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -10), new Vector2(-100, 30));
         nameText.alignment = TextAlignmentOptions.Left;
         nameText.color = new Color(0.9f, 0.85f, 0.75f);

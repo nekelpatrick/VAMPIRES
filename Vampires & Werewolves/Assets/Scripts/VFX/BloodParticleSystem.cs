@@ -17,7 +17,7 @@ public class BloodParticleSystem : MonoBehaviour
 
     [Header("Gore Decals")]
     [SerializeField] private int maxDecals = 30;
-    [SerializeField] private float decalLifetime = 10f;
+    [System.NonSerialized] public float decalLifetime = 10f;
 
     private List<BloodParticle> particles = new List<BloodParticle>();
     private List<GameObject> decals = new List<GameObject>();

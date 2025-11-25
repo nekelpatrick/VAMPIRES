@@ -53,7 +53,7 @@ public class GothicHUD : MonoBehaviour
 
         currencyManager = CurrencyManager.Instance;
         combatManager = CombatManager.Instance;
-        hordeSpawner = Object.FindFirstObjectByType<HordeSpawner>();
+        hordeSpawner = UnityEngine.Object.FindFirstObjectByType<HordeSpawner>();
 
         if (currencyManager != null)
         {

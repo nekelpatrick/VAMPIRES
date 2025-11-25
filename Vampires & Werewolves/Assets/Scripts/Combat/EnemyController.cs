@@ -9,7 +9,6 @@ public class EnemyController : CombatEntity
     private CombatManager combatManager;
     private EnemyData enemyData;
     private float baseScale = 0.4f;
-    private bool visualsCreated;
 
     protected override void Awake()
     {
@@ -71,7 +70,6 @@ public class EnemyController : CombatEntity
         }
 
         CreateHealthBar();
-        visualsCreated = true;
     }
 
     void AddEliteEffects()
@@ -287,6 +285,5 @@ public class EnemyController : CombatEntity
         WaveNumber = 0;
         currentTarget = null;
         isInRange = false;
-        visualsCreated = false;
     }
 }
