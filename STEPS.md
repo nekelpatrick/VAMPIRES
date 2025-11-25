@@ -17,7 +17,7 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
 - [x] **M2 — Deterministic Combat (Node.js)**  
        Server battle simulator (ResolveBattle) + replay sync with Unity client via REST/WebSocket.
 
-- [ ] **M3 — PvP + Resurrection**  
+- [x] **M3 — PvP + Resurrection**  
        Matchmaker queues, `[DEATH]` handling, revival flows, Unity UI screens.
 
 - [ ] **M4 — Economy & Monetization**  

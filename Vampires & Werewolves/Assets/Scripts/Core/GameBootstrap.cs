@@ -10,38 +10,41 @@ public static class GameBootstrap
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "GameScene")
             return;
 
-        Debug.Log("[Vampires] Bootstrapping idle combat...");
+        Debug.Log("[Vampires] Bootstrapping The Nine Circles...");
 
         SetupCamera();
         SetupManagers();
+        SetupAtmosphere();
         SetupBattlefield();
         SetupThrall();
         SetupHUD();
+        SetupVFXSystems();
 
-        Debug.Log("[Vampires] Idle combat initialized! Watch the [THRALL] fight the [HORDE]!");
+        Debug.Log("[Vampires] Welcome to the [BATTLEFIELD]. The [HORDE] awaits!");
     }
 
     static void SetupCamera()
     {
         Camera cam = Camera.main;
-        if (cam != null)
-        {
-            cam.orthographic = true;
-            cam.orthographicSize = 7f;
-            cam.transform.position = new Vector3(0, 1, -10);
-            cam.backgroundColor = new Color(0.06f, 0.06f, 0.1f);
-        }
+        if (cam == null) return;
+
+        cam.orthographic = true;
+        cam.orthographicSize = 6f;
+        cam.transform.position = new Vector3(0, 1.5f, -10);
+        cam.backgroundColor = new Color(0.02f, 0.01f, 0.02f);
+
+        cam.gameObject.AddComponent<CameraEffects>();
     }
 
     static void SetupManagers()
     {
-        GameObject managers = GameObject.Find("[Managers]");
-        if (managers == null)
+        GameObject oldManagers = GameObject.Find("[Managers]");
+        if (oldManagers != null)
         {
-            managers = new GameObject("[Managers]");
+            Object.Destroy(oldManagers);
         }
 
-        CleanMissingScripts(managers);
+        GameObject managers = new GameObject("[Managers]");
 
         if (managers.GetComponent<GameManager>() == null)
             managers.AddComponent<GameManager>();
@@ -69,8 +72,22 @@ public static class GameBootstrap
         {
             if (components[i] == null)
             {
-                Debug.Log($"[Vampires] Removing missing script from {go.name}");
+                Debug.Log($"[Vampires] Found missing script on {go.name}");
             }
+        }
+    }
+
+    static void SetupAtmosphere()
+    {
+        GameObject atmosphere = GameObject.Find("[Atmosphere]");
+        if (atmosphere == null)
+        {
+            atmosphere = new GameObject("[Atmosphere]");
+        }
+
+        if (atmosphere.GetComponent<AtmosphereSystem>() == null)
+        {
+            atmosphere.AddComponent<AtmosphereSystem>();
         }
     }
 
@@ -94,13 +111,13 @@ public static class GameBootstrap
         {
             spawnPoint = new GameObject("SpawnPoint");
             spawnPoint.transform.SetParent(battlefield.transform);
-            spawnPoint.transform.position = Vector3.zero;
+            spawnPoint.transform.position = new Vector3(8f, 0, 0);
         }
 
-        CreateFloor(battlefield.transform);
+        CreateGoreBattlefloor(battlefield.transform);
     }
 
-    static void CreateFloor(Transform parent)
+    static void CreateGoreBattlefloor(Transform parent)
     {
         GameObject existingFloor = GameObject.Find("Floor");
         if (existingFloor != null) return;
@@ -108,15 +125,67 @@ public static class GameBootstrap
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "Floor";
         floor.transform.SetParent(parent);
-        floor.transform.position = new Vector3(0, -0.6f, 0);
-        floor.transform.localScale = new Vector3(30, 0.2f, 3);
+        floor.transform.position = new Vector3(0, -0.55f, 0);
+        floor.transform.localScale = new Vector3(40, 0.3f, 5);
 
         Renderer r = floor.GetComponent<Renderer>();
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        mat.color = new Color(0.12f, 0.12f, 0.15f);
+        mat.color = new Color(0.08f, 0.05f, 0.06f);
         r.material = mat;
 
         Object.Destroy(floor.GetComponent<Collider>());
+
+        CreateBloodStains(parent);
+
+        for (int i = 0; i < 8; i++)
+        {
+            GameObject bone = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            bone.name = "ScatteredBone_" + i;
+            bone.transform.SetParent(parent);
+            bone.transform.position = new Vector3(
+                Random.Range(-12f, 12f),
+                -0.35f,
+                Random.Range(-1f, 1f)
+            );
+            bone.transform.localScale = new Vector3(0.05f, Random.Range(0.1f, 0.3f), 0.05f);
+            bone.transform.rotation = Quaternion.Euler(
+                Random.Range(60, 90),
+                Random.Range(0, 360),
+                0
+            );
+
+            Renderer br = bone.GetComponent<Renderer>();
+            Material boneMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            boneMat.color = new Color(0.7f, 0.65f, 0.55f);
+            br.material = boneMat;
+
+            Object.Destroy(bone.GetComponent<Collider>());
+        }
+    }
+
+    static void CreateBloodStains(Transform parent)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            GameObject stain = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            stain.name = "BloodStain_" + i;
+            stain.transform.SetParent(parent);
+            stain.transform.position = new Vector3(
+                Random.Range(-15f, 15f),
+                -0.38f,
+                Random.Range(-1.5f, 1.5f)
+            );
+            stain.transform.rotation = Quaternion.Euler(90, Random.Range(0, 360), 0);
+            stain.transform.localScale = Vector3.one * Random.Range(0.5f, 2f);
+
+            Renderer sr = stain.GetComponent<Renderer>();
+            Material stainMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            float darkness = Random.Range(0.1f, 0.25f);
+            stainMat.color = new Color(darkness, 0.02f, 0.02f, Random.Range(0.3f, 0.6f));
+            sr.material = stainMat;
+
+            Object.Destroy(stain.GetComponent<Collider>());
+        }
     }
 
     static void SetupThrall()
@@ -124,51 +193,60 @@ public static class GameBootstrap
         GameObject existingThrall = GameObject.FindWithTag("Player");
         if (existingThrall != null) return;
 
-        GameObject thrall = new GameObject("Werewolf");
+        GameObject thrall = new GameObject("[THRALL] Werewolf");
         thrall.tag = "Player";
-        thrall.transform.position = new Vector3(-5, 0, 0);
-        thrall.transform.localScale = Vector3.one * 0.4f;
+        thrall.transform.position = new Vector3(-6, 0, 0);
+        thrall.transform.localScale = Vector3.one * 0.5f;
 
         ThrallController controller = thrall.AddComponent<ThrallController>();
         thrall.AddComponent<AttackAnimator>();
 
-        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        body.name = "Body";
-        body.transform.SetParent(thrall.transform);
-        body.transform.localPosition = new Vector3(0, 1.25f, 0);
-        body.transform.localScale = Vector3.one;
+        UnitVisualFactory.CreateWerewolfVisual(thrall.transform);
 
-        Renderer r = body.GetComponent<Renderer>();
-        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        mat.color = new Color(0.2f, 0.4f, 0.9f);
-        r.material = mat;
-
-        Object.Destroy(body.GetComponent<Collider>());
-
-        CreateHealthBar(thrall.transform);
+        CreateWorldSpaceHealthBar(thrall.transform, new Color(0.2f, 0.8f, 0.3f));
     }
 
-    static void CreateHealthBar(Transform parent)
+    static void CreateWorldSpaceHealthBar(Transform parent, Color barColor)
     {
         GameObject hpBarRoot = new GameObject("HPBar");
         hpBarRoot.transform.SetParent(parent);
-        hpBarRoot.transform.localPosition = new Vector3(0, 3.5f, 0);
-        hpBarRoot.transform.localScale = Vector3.one * 2.5f;
+        hpBarRoot.transform.localPosition = new Vector3(0, 5f, 0);
+        hpBarRoot.transform.localScale = Vector3.one * 2f;
 
         GameObject bgQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         bgQuad.name = "Background";
         bgQuad.transform.SetParent(hpBarRoot.transform);
         bgQuad.transform.localPosition = Vector3.zero;
-        bgQuad.transform.localScale = new Vector3(1.2f, 0.15f, 1);
-        bgQuad.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+        bgQuad.transform.localScale = new Vector3(1.4f, 0.18f, 1);
+
+        Renderer bgRenderer = bgQuad.GetComponent<Renderer>();
+        Material bgMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        bgMat.color = new Color(0.05f, 0.03f, 0.03f, 0.9f);
+        bgRenderer.material = bgMat;
         Object.Destroy(bgQuad.GetComponent<Collider>());
+
+        GameObject border = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        border.name = "Border";
+        border.transform.SetParent(hpBarRoot.transform);
+        border.transform.localPosition = new Vector3(0, 0, -0.005f);
+        border.transform.localScale = new Vector3(1.5f, 0.22f, 1);
+
+        Renderer borderRenderer = border.GetComponent<Renderer>();
+        Material borderMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        borderMat.color = new Color(0.5f, 0.35f, 0.2f, 0.8f);
+        borderRenderer.material = borderMat;
+        Object.Destroy(border.GetComponent<Collider>());
 
         GameObject fillQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         fillQuad.name = "Fill";
         fillQuad.transform.SetParent(hpBarRoot.transform);
         fillQuad.transform.localPosition = new Vector3(0, 0, -0.01f);
-        fillQuad.transform.localScale = new Vector3(1.1f, 0.1f, 1);
-        fillQuad.GetComponent<Renderer>().material.color = new Color(0.8f, 0.2f, 0.2f);
+        fillQuad.transform.localScale = new Vector3(1.3f, 0.12f, 1);
+
+        Renderer fillRenderer = fillQuad.GetComponent<Renderer>();
+        Material fillMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        fillMat.color = barColor;
+        fillRenderer.material = fillMat;
         Object.Destroy(fillQuad.GetComponent<Collider>());
 
         hpBarRoot.AddComponent<WorldSpaceHealthBar>();
@@ -176,81 +254,32 @@ public static class GameBootstrap
 
     static void SetupHUD()
     {
-        GameObject hudRoot = GameObject.Find("[HUD]");
-        if (hudRoot == null)
+        GameObject oldHud = GameObject.Find("[HUD]");
+        if (oldHud != null)
         {
-            hudRoot = new GameObject("[HUD]");
+            Object.Destroy(oldHud);
         }
 
-        Canvas existingCanvas = hudRoot.GetComponentInChildren<Canvas>();
-        if (existingCanvas != null) return;
-
-        GameObject canvasObj = new GameObject("HUD Canvas");
-        canvasObj.transform.SetParent(hudRoot.transform);
-
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-
-        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-
-        canvasObj.AddComponent<GraphicRaycaster>();
-
-        GameObject topPanel = new GameObject("TopPanel");
-        topPanel.transform.SetParent(canvasObj.transform);
-        RectTransform topRect = topPanel.AddComponent<RectTransform>();
-        topRect.anchorMin = new Vector2(0, 1);
-        topRect.anchorMax = new Vector2(1, 1);
-        topRect.pivot = new Vector2(0.5f, 1);
-        topRect.anchoredPosition = new Vector2(0, 0);
-        topRect.sizeDelta = new Vector2(0, 80);
-
-        Image bgImage = topPanel.AddComponent<Image>();
-        bgImage.color = new Color(0.05f, 0.05f, 0.08f, 0.9f);
-
-        HorizontalLayoutGroup layout = topPanel.AddComponent<HorizontalLayoutGroup>();
-        layout.spacing = 40;
-        layout.padding = new RectOffset(30, 30, 15, 15);
-        layout.childAlignment = TextAnchor.MiddleLeft;
-        layout.childControlWidth = false;
-        layout.childControlHeight = true;
-
-        TextMeshProUGUI waveText = CreateText(topPanel.transform, "WaveText", "WAVE 1", 32, Color.white, FontStyles.Bold, 180);
-        TextMeshProUGUI duskenText = CreateText(topPanel.transform, "DuskenText", "[DUSKEN COIN]: 0", 22, new Color(1f, 0.85f, 0.4f), FontStyles.Normal, 280);
-        TextMeshProUGUI shardsText = CreateText(topPanel.transform, "ShardsText", "[BLOOD SHARDS]: 0", 22, new Color(0.9f, 0.2f, 0.3f), FontStyles.Normal, 280);
-        TextMeshProUGUI healthText = CreateText(topPanel.transform, "HealthText", "[THRALL] HP: 500/500", 22, new Color(0.4f, 0.9f, 0.4f), FontStyles.Normal, 320);
-
-        HUD hud = canvasObj.AddComponent<HUD>();
-
-        var hudType = typeof(HUD);
-        var waveField = hudType.GetField("waveText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var duskenField = hudType.GetField("duskenCoinText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var shardsField = hudType.GetField("bloodShardsText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var healthField = hudType.GetField("thrallHealthText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        waveField?.SetValue(hud, waveText);
-        duskenField?.SetValue(hud, duskenText);
-        shardsField?.SetValue(hud, shardsText);
-        healthField?.SetValue(hud, healthText);
+        GameObject hudRoot = new GameObject("[HUD]");
+        hudRoot.AddComponent<GothicHUD>();
     }
 
-    static TextMeshProUGUI CreateText(Transform parent, string name, string text, float size, Color color, FontStyles style, float width)
+    static void SetupVFXSystems()
     {
-        GameObject textObj = new GameObject(name);
-        textObj.transform.SetParent(parent);
+        GameObject vfxSystems = GameObject.Find("[VFX]");
+        if (vfxSystems == null)
+        {
+            vfxSystems = new GameObject("[VFX]");
+        }
 
-        RectTransform rect = textObj.AddComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(width, 50);
+        if (vfxSystems.GetComponent<BloodParticleSystem>() == null)
+        {
+            vfxSystems.AddComponent<BloodParticleSystem>();
+        }
 
-        TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = size;
-        tmp.fontStyle = style;
-        tmp.alignment = TextAlignmentOptions.MidlineLeft;
-        tmp.color = color;
-
-        return tmp;
+        if (vfxSystems.GetComponent<ScreenEffects>() == null)
+        {
+            vfxSystems.AddComponent<ScreenEffects>();
+        }
     }
 }

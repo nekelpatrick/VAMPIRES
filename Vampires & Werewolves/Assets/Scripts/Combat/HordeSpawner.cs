@@ -9,14 +9,13 @@ public class HordeSpawner : MonoBehaviour
 
     [SerializeField] private EnemyData enemyData;
     [SerializeField] private Transform spawnPoint;
-    [SerializeField] private float spawnXMin = 5f;
-    [SerializeField] private float spawnXMax = 8f;
-    [SerializeField] private float spawnYVariance = 2f;
+    [SerializeField] private float spawnXMin = 6f;
+    [SerializeField] private float spawnXMax = 10f;
+    [SerializeField] private float spawnYVariance = 1.5f;
     [SerializeField] private float eliteChance = 0.1f;
 
     private CombatManager combatManager;
     private List<EnemyController> pooledEnemies = new List<EnemyController>();
-    private GameObject enemyTemplate;
 
     private int currentWave;
     private int enemiesRemaining;
@@ -28,8 +27,8 @@ public class HordeSpawner : MonoBehaviour
 
     void Awake()
     {
-        CreateEnemyTemplate();
         CreateDefaultEnemyData();
+        PrewarmPool(20);
     }
 
     void Start()
@@ -49,58 +48,20 @@ public class HordeSpawner : MonoBehaviour
         StartWave(1);
     }
 
-    void CreateEnemyTemplate()
+    void PrewarmPool(int count)
     {
-        enemyTemplate = new GameObject("EnemyTemplate");
-        enemyTemplate.SetActive(false);
-        enemyTemplate.transform.SetParent(transform);
-        enemyTemplate.tag = "Enemy";
-
-        enemyTemplate.AddComponent<EnemyController>();
-        enemyTemplate.AddComponent<AttackAnimator>();
-
-        GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        body.name = "Body";
-        body.transform.SetParent(enemyTemplate.transform);
-        body.transform.localPosition = new Vector3(0, 1.25f, 0);
-        body.transform.localScale = Vector3.one;
-        body.GetComponent<Renderer>().material.color = new Color(0.8f, 0.2f, 0.2f);
-        Destroy(body.GetComponent<Collider>());
-
-        CreateEnemyHealthBar(enemyTemplate.transform);
-
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < count; i++)
         {
-            GameObject clone = Instantiate(enemyTemplate, transform);
-            clone.SetActive(false);
-            pooledEnemies.Add(clone.GetComponent<EnemyController>());
+            GameObject enemyObj = new GameObject("Enemy_" + i);
+            enemyObj.transform.SetParent(transform);
+            enemyObj.transform.localScale = Vector3.one * 0.4f;
+            enemyObj.SetActive(false);
+
+            EnemyController controller = enemyObj.AddComponent<EnemyController>();
+            enemyObj.AddComponent<AttackAnimator>();
+
+            pooledEnemies.Add(controller);
         }
-    }
-
-    void CreateEnemyHealthBar(Transform parent)
-    {
-        GameObject hpBarRoot = new GameObject("HPBar");
-        hpBarRoot.transform.SetParent(parent);
-        hpBarRoot.transform.localPosition = new Vector3(0, 3.5f, 0);
-        hpBarRoot.transform.localScale = Vector3.one * 2.5f;
-
-        GameObject bgQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        bgQuad.name = "Background";
-        bgQuad.transform.SetParent(hpBarRoot.transform);
-        bgQuad.transform.localPosition = Vector3.zero;
-        bgQuad.transform.localScale = new Vector3(1.2f, 0.15f, 1);
-        bgQuad.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
-        Destroy(bgQuad.GetComponent<Collider>());
-
-        GameObject fillQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        fillQuad.name = "Fill";
-        fillQuad.transform.SetParent(hpBarRoot.transform);
-        fillQuad.transform.localPosition = new Vector3(0, 0, -0.01f);
-        fillQuad.transform.localScale = new Vector3(1.1f, 0.1f, 1);
-        fillQuad.GetComponent<Renderer>().material.color = new Color(0.8f, 0.2f, 0.2f);
-        Destroy(fillQuad.GetComponent<Collider>());
-
-        hpBarRoot.AddComponent<WorldSpaceHealthBar>();
     }
 
     void CreateDefaultEnemyData()
@@ -116,8 +77,8 @@ public class HordeSpawner : MonoBehaviour
                 defense = 4f,
                 speed = 1f
             };
-            enemyData.normalColor = new Color(0.8f, 0.2f, 0.2f);
-            enemyData.eliteColor = new Color(0.9f, 0.1f, 0.4f);
+            enemyData.normalColor = new Color(0.5f, 0.6f, 0.4f);
+            enemyData.eliteColor = new Color(0.8f, 0.2f, 0.3f);
         }
     }
 
@@ -125,7 +86,7 @@ public class HordeSpawner : MonoBehaviour
     {
         if (!waveActive) return;
         if (enemiesToSpawn <= 0) return;
-        if (combatManager.GetActiveEnemyCount() >= maxConcurrent) return;
+        if (combatManager == null || combatManager.GetActiveEnemyCount() >= maxConcurrent) return;
 
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0)
@@ -147,6 +108,15 @@ public class HordeSpawner : MonoBehaviour
         spawnTimer = 0f;
         waveActive = true;
 
+        if (wave % 5 == 0)
+        {
+            eliteChance = 0.25f;
+        }
+        else
+        {
+            eliteChance = 0.08f + wave * 0.01f;
+        }
+
         OnWaveStarted?.Invoke(currentWave);
     }
 
@@ -154,9 +124,9 @@ public class HordeSpawner : MonoBehaviour
     {
         return new WaveBudget
         {
-            totalEnemies = Mathf.RoundToInt(6 + wave * 1.5f),
-            maxConcurrent = Mathf.Min(10, 4 + Mathf.FloorToInt(wave / 1.5f)),
-            spawnInterval = Mathf.Max(0.45f, 1.4f - wave * 0.06f)
+            totalEnemies = Mathf.RoundToInt(5 + wave * 1.8f),
+            maxConcurrent = Mathf.Min(12, 4 + Mathf.FloorToInt(wave / 1.5f)),
+            spawnInterval = Mathf.Max(0.4f, 1.3f - wave * 0.05f)
         };
     }
 
@@ -169,7 +139,7 @@ public class HordeSpawner : MonoBehaviour
 
         bool isElite = UnityEngine.Random.value < eliteChance;
 
-        Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
+        Vector3 pos = spawnPoint != null ? spawnPoint.position : new Vector3(8f, 0, 0);
         pos.x = UnityEngine.Random.Range(spawnXMin, spawnXMax);
         pos.y = UnityEngine.Random.Range(-spawnYVariance, spawnYVariance);
         enemy.transform.position = pos;
@@ -188,10 +158,16 @@ public class HordeSpawner : MonoBehaviour
             }
         }
 
-        GameObject clone = Instantiate(enemyTemplate, transform);
-        EnemyController newEnemy = clone.GetComponent<EnemyController>();
-        pooledEnemies.Add(newEnemy);
-        return newEnemy;
+        GameObject enemyObj = new GameObject("Enemy_" + pooledEnemies.Count);
+        enemyObj.transform.SetParent(transform);
+        enemyObj.transform.localScale = Vector3.one * 0.4f;
+        enemyObj.SetActive(false);
+
+        EnemyController controller = enemyObj.AddComponent<EnemyController>();
+        enemyObj.AddComponent<AttackAnimator>();
+
+        pooledEnemies.Add(controller);
+        return controller;
     }
 
     void HandleEnemyDeath(EnemyController enemy)
@@ -204,6 +180,12 @@ public class HordeSpawner : MonoBehaviour
         {
             waveActive = false;
             OnWaveCompleted?.Invoke(currentWave);
+
+            if (currentWave % 5 == 0)
+            {
+                CameraEffects.Instance?.TriggerBossKillEffect();
+            }
+
             StartWave(currentWave + 1);
         }
     }
@@ -211,6 +193,16 @@ public class HordeSpawner : MonoBehaviour
     public int GetCurrentWave()
     {
         return currentWave;
+    }
+
+    public int GetEnemiesRemaining()
+    {
+        return enemiesRemaining;
+    }
+
+    public int GetTotalEnemiesInWave()
+    {
+        return enemiesToSpawn + enemiesRemaining;
     }
 
     void OnDestroy()

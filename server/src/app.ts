@@ -6,6 +6,8 @@ import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 import { env } from './config/env'
 import type {} from './types/fastify'
 import { battleRoutes } from './server/routes/battle'
+import { pvpRoutes } from './server/routes/pvp'
+import { revivalRoutes } from './server/routes/revival'
 import { registerHealthRoutes } from './server/routes/health'
 import { registerSpecRoute } from './server/routes/spec'
 import { registerTrpcPlugin } from './trpc/plugin'
@@ -35,7 +37,9 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
         { name: 'Player', description: 'Player state and progression' },
         { name: 'Thrall', description: '[THRALL] management' },
         { name: 'Economy', description: '[DUSKEN COIN] and [BLOOD SHARDS] balances' },
-        { name: 'battle', description: 'Server-authoritative combat resolution' }
+        { name: 'battle', description: 'Server-authoritative combat resolution' },
+        { name: 'pvp', description: 'PvP matchmaking and battles' },
+        { name: 'revival', description: '[DEATH] and resurrection system' }
       ],
       servers: [
         { url: env.BASE_URL, description: 'Public Gateway' },
@@ -56,6 +60,8 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify) => {
   await fastify.register(registerHealthRoutes)
   await fastify.register(registerSpecRoute)
   await fastify.register(battleRoutes)
+  await fastify.register(pvpRoutes)
+  await fastify.register(revivalRoutes)
 }
 
 export default app

@@ -5,12 +5,10 @@ public class ThrallController : CombatEntity
     [SerializeField] private ThrallData thrallData;
 
     private CombatManager combatManager;
-    private Renderer meshRenderer;
 
     protected override void Awake()
     {
         base.Awake();
-        meshRenderer = GetComponentInChildren<Renderer>();
         CreateDefaultData();
         facingDirection = 1;
     }
@@ -24,21 +22,17 @@ public class ThrallController : CombatEntity
             thrallData.baseStats = new CombatStats
             {
                 maxHealth = 500f,
-                attack = 45f,
-                defense = 12f,
-                speed = 1.2f
+                attack = 55f,
+                defense = 15f,
+                speed = 1.3f
             };
-            thrallData.color = new Color(0.2f, 0.4f, 0.9f);
+            thrallData.color = new Color(0.3f, 0.25f, 0.35f);
         }
     }
 
     void Start()
     {
         Initialize(thrallData.baseStats);
-        if (meshRenderer != null)
-        {
-            meshRenderer.material.color = thrallData.color;
-        }
 
         combatManager = CombatManager.Instance;
         if (combatManager != null)
@@ -72,15 +66,43 @@ public class ThrallController : CombatEntity
     void Attack(CombatEntity target)
     {
         TriggerAttackEvent();
-        int damage = CombatMath.ComputeDamage(Stats.attack, target.Stats.defense);
-        damage = CombatMath.ApplyVariance(damage, 0.2f, Random.value);
+
+        int baseDamage = CombatMath.ComputeDamage(Stats.attack, target.Stats.defense);
+        int damage = CombatMath.ApplyVariance(baseDamage, 0.25f, Random.value);
+
+        bool isCritical = Random.value < 0.15f;
+        if (isCritical)
+        {
+            damage = Mathf.RoundToInt(damage * 1.75f);
+        }
+
         target.TakeDamage(damage);
+
+        Vector3 hitPos = target.transform.position + Vector3.up * 0.8f;
+        Vector3 attackDir = (target.transform.position - transform.position).normalized;
+
+        BloodParticleSystem blood = BloodParticleSystem.Instance;
+        if (blood != null)
+        {
+            blood.SpawnBloodSplash(hitPos, attackDir, damage);
+            blood.SpawnSlashEffect(hitPos, attackDir);
+        }
+
+        if (isCritical)
+        {
+            CameraEffects.Instance?.ShakeOnCritical();
+            ScreenEffects.Instance?.FlashOnCritical();
+            CameraEffects.Instance?.TriggerHitPause();
+        }
+        else
+        {
+            CameraEffects.Instance?.ShakeOnDamage(damage / 2);
+        }
 
         DamageNumberSpawner spawner = DamageNumberSpawner.Instance;
         if (spawner != null)
         {
-            Vector3 pos = target.transform.position + Vector3.up * 1.2f;
-            spawner.Spawn(damage, pos, damage > Stats.attack * 1.3f);
+            spawner.Spawn(damage, hitPos, isCritical);
         }
     }
 
@@ -90,6 +112,20 @@ public class ThrallController : CombatEntity
         if (combatManager != null)
         {
             combatManager.OnThrallDeath();
+        }
+
+        ScreenEffects.Instance?.FlashRed(0.5f);
+        CameraEffects.Instance?.Shake(0.3f);
+    }
+
+    public override void TakeDamage(int amount)
+    {
+        base.TakeDamage(amount);
+
+        float healthRatio = CurrentHealth / Stats.maxHealth;
+        if (healthRatio < 0.3f)
+        {
+            ScreenEffects.Instance?.FlashBloodBorder(0.1f);
         }
     }
 

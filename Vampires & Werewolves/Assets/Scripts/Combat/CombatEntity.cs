@@ -82,7 +82,7 @@ public abstract class CombatEntity : MonoBehaviour
 
     public abstract void PerformAction();
 
-    public void TakeDamage(int damage)
+    public virtual void TakeDamage(int damage)
     {
         if (!IsAlive) return;
 
