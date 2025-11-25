@@ -8,10 +8,10 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
 
 ---
 
-- [ ] **M0 — Infra & Skeleton**  
+- [x] **M0 — Infra & Skeleton**  
        Unity project setup (URP, folder structure), Fastify server scaffold, CI/CD pipeline, basic scene with side-view camera.
 
-- [ ] **M1 — Idle Combat Core**  
+- [x] **M1 — Idle Combat Core**  
        Thrall prefab, Horde spawner, basic AI movement, VFX particles, HUD canvas showing `[DUSKEN COIN]` and `[BLOOD SHARDS]`.
 
 - [ ] **M2 — Deterministic Combat (Node.js)**  
