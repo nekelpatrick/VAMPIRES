@@ -23,6 +23,7 @@ public class AttackAnimator : MonoBehaviour
     private bool isAnimating;
     private float animTimer;
     private AnimState currentState;
+    private Vector3 lungeEndPosition;
 
     enum AnimState
     {
@@ -87,6 +88,7 @@ public class AttackAnimator : MonoBehaviour
 
                 if (animTimer <= 0)
                 {
+                    lungeEndPosition = transform.position;
                     currentState = AnimState.Return;
                     animTimer = lungeDuration;
                 }
@@ -94,7 +96,7 @@ public class AttackAnimator : MonoBehaviour
 
             case AnimState.Return:
                 float returnProgress = 1f - (animTimer / lungeDuration);
-                transform.position = Vector3.Lerp(transform.position, originalPosition, returnProgress);
+                transform.position = Vector3.Lerp(lungeEndPosition, originalPosition, returnProgress);
                 transform.localScale = Vector3.Lerp(originalScale * punchScale, originalScale, returnProgress);
 
                 if (animTimer <= 0)

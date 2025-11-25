@@ -12,9 +12,11 @@ public class WorldSpaceHealthBar : MonoBehaviour
     private CombatEntity entity;
     private Vector3 originalFillScale;
     private bool isInitialized;
+    private Camera mainCamera;
 
     void Start()
     {
+        mainCamera = Camera.main;
         FindReferences();
     }
 
@@ -50,7 +52,8 @@ public class WorldSpaceHealthBar : MonoBehaviour
     {
         if (!isInitialized) return;
 
-        transform.rotation = Camera.main.transform.rotation;
+        if (mainCamera == null) mainCamera = Camera.main;
+        if (mainCamera != null) transform.rotation = mainCamera.transform.rotation;
 
         if (hideWhenFull && entity != null)
         {
