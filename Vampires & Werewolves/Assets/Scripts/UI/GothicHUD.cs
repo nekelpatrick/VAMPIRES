@@ -71,13 +71,42 @@ public class GothicHUD : MonoBehaviour
             thrall = combatManager.GetThrall();
         }
 
-        adManager = AdRewardManager.Instance;
-        questManager = DailyQuestManager.Instance;
+        StartCoroutine(BindAdAndQuestManagers());
+    }
+
+    System.Collections.IEnumerator BindAdAndQuestManagers()
+    {
+        int attempts = 0;
+        while (adManager == null && attempts < 10)
+        {
+            adManager = AdRewardManager.Instance;
+            if (adManager == null)
+            {
+                yield return new WaitForSeconds(0.1f);
+                attempts++;
+            }
+        }
 
         if (adManager != null)
         {
             adManager.OnDamageBoostStarted += OnDamageBoostStarted;
             adManager.OnDamageBoostEnded += OnDamageBoostEnded;
+            Debug.Log("[GothicHUD] AdRewardManager bound successfully");
+        }
+        else
+        {
+            Debug.LogWarning("[GothicHUD] AdRewardManager not found after retries");
+        }
+
+        attempts = 0;
+        while (questManager == null && attempts < 10)
+        {
+            questManager = DailyQuestManager.Instance;
+            if (questManager == null)
+            {
+                yield return new WaitForSeconds(0.1f);
+                attempts++;
+            }
         }
 
         if (questManager != null)
@@ -85,23 +114,52 @@ public class GothicHUD : MonoBehaviour
             questManager.OnQuestCompleted += OnQuestCompleted;
             questManager.OnQuestClaimed += OnQuestStatusChanged;
             UpdateQuestBadge();
+            Debug.Log("[GothicHUD] DailyQuestManager bound successfully");
+        }
+        else
+        {
+            Debug.LogWarning("[GothicHUD] DailyQuestManager not found after retries");
         }
     }
 
     void OnDamageBoostClicked()
     {
-        adManager?.RequestDamageBoost((success) =>
+        Debug.Log("[GothicHUD] Damage boost button clicked!");
+
+        if (adManager == null)
         {
-            if (success)
+            adManager = AdRewardManager.Instance;
+        }
+
+        if (adManager != null)
+        {
+            adManager.RequestDamageBoost((success) =>
             {
-                ScreenEffects.Instance?.FlashGold(0.3f);
-            }
-        });
+                if (success)
+                {
+                    ScreenEffects.Instance?.FlashGold(0.3f);
+                }
+            });
+        }
+        else
+        {
+            Debug.LogWarning("[GothicHUD] AdRewardManager not available");
+        }
     }
 
     void OnQuestButtonClicked()
     {
-        QuestPanel.Instance?.Toggle();
+        Debug.Log("[GothicHUD] Quest button clicked!");
+
+        QuestPanel panel = QuestPanel.Instance;
+        if (panel != null)
+        {
+            panel.Toggle();
+        }
+        else
+        {
+            Debug.LogWarning("[GothicHUD] QuestPanel not available");
+        }
     }
 
     void OnDamageBoostStarted()
@@ -173,6 +231,9 @@ public class GothicHUD : MonoBehaviour
 
     void CreateAdButtons(Transform parent)
     {
+        float buttonSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetButtonSize(120f) : 120f;
+        float fontSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetFontSize(40f) : 40f;
+
         GameObject boostBtn = new GameObject("DamageBoostButton");
         boostBtn.transform.SetParent(parent);
 
@@ -180,41 +241,86 @@ public class GothicHUD : MonoBehaviour
         btnRect.anchorMin = new Vector2(1, 0.5f);
         btnRect.anchorMax = new Vector2(1, 0.5f);
         btnRect.pivot = new Vector2(1, 0.5f);
-        btnRect.anchoredPosition = new Vector2(-20, 100);
-        btnRect.sizeDelta = new Vector2(80, 80);
+        btnRect.anchoredPosition = new Vector2(-25, 140);
+        btnRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+
+        GameObject borderObj = new GameObject("Border");
+        borderObj.transform.SetParent(boostBtn.transform);
+        RectTransform borderRect = borderObj.AddComponent<RectTransform>();
+        borderRect.anchorMin = Vector2.zero;
+        borderRect.anchorMax = Vector2.one;
+        borderRect.offsetMin = new Vector2(-4, -4);
+        borderRect.offsetMax = new Vector2(4, 4);
+        borderObj.transform.SetAsFirstSibling();
+
+        Image borderImg = borderObj.AddComponent<Image>();
+        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.raycastTarget = false;
 
         Image btnBg = boostBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.6f, 0.2f, 0.2f, 0.9f);
+        btnBg.color = new Color(0.5f, 0.15f, 0.15f, 0.95f);
+        btnBg.raycastTarget = true;
 
         damageBoostButton = boostBtn.AddComponent<Button>();
         damageBoostButton.onClick.AddListener(OnDamageBoostClicked);
+
+        ColorBlock colors = damageBoostButton.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f);
+        damageBoostButton.colors = colors;
 
         GameObject glowObj = new GameObject("Glow");
         glowObj.transform.SetParent(boostBtn.transform);
         RectTransform glowRect = glowObj.AddComponent<RectTransform>();
         glowRect.anchorMin = Vector2.zero;
         glowRect.anchorMax = Vector2.one;
-        glowRect.offsetMin = new Vector2(-10, -10);
-        glowRect.offsetMax = new Vector2(10, 10);
+        glowRect.offsetMin = new Vector2(-15, -15);
+        glowRect.offsetMax = new Vector2(15, 15);
         glowObj.transform.SetAsFirstSibling();
 
         damageBoostGlow = glowObj.AddComponent<Image>();
-        damageBoostGlow.color = new Color(1f, 0.3f, 0.3f, 0.4f);
+        damageBoostGlow.color = new Color(1f, 0.3f, 0.3f, 0.5f);
+        damageBoostGlow.raycastTarget = false;
 
         GameObject iconObj = new GameObject("Icon");
         iconObj.transform.SetParent(boostBtn.transform);
         RectTransform iconRect = iconObj.AddComponent<RectTransform>();
         iconRect.anchorMin = Vector2.zero;
         iconRect.anchorMax = Vector2.one;
-        iconRect.offsetMin = new Vector2(10, 10);
-        iconRect.offsetMax = new Vector2(-10, -10);
+        iconRect.offsetMin = new Vector2(8, 15);
+        iconRect.offsetMax = new Vector2(-8, -15);
 
         TextMeshProUGUI iconText = iconObj.AddComponent<TextMeshProUGUI>();
-        iconText.text = "2x";
-        iconText.fontSize = 28;
+        iconText.text = "2X";
+        iconText.fontSize = fontSize;
         iconText.fontStyle = FontStyles.Bold;
         iconText.alignment = TextAlignmentOptions.Center;
         iconText.color = Color.white;
+        iconText.enableAutoSizing = true;
+        iconText.fontSizeMin = 24;
+        iconText.fontSizeMax = fontSize;
+        iconText.raycastTarget = false;
+
+        GameObject shadowObj = new GameObject("Shadow");
+        shadowObj.transform.SetParent(iconObj.transform);
+        RectTransform shadowRect = shadowObj.AddComponent<RectTransform>();
+        shadowRect.anchorMin = Vector2.zero;
+        shadowRect.anchorMax = Vector2.one;
+        shadowRect.offsetMin = new Vector2(2, -2);
+        shadowRect.offsetMax = new Vector2(2, -2);
+        shadowObj.transform.SetAsFirstSibling();
+
+        TextMeshProUGUI shadowText = shadowObj.AddComponent<TextMeshProUGUI>();
+        shadowText.text = "2X";
+        shadowText.fontSize = fontSize;
+        shadowText.fontStyle = FontStyles.Bold;
+        shadowText.alignment = TextAlignmentOptions.Center;
+        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.enableAutoSizing = true;
+        shadowText.fontSizeMin = 24;
+        shadowText.fontSizeMax = fontSize;
+        shadowText.raycastTarget = false;
 
         GameObject labelObj = new GameObject("Label");
         labelObj.transform.SetParent(boostBtn.transform);
@@ -222,18 +328,23 @@ public class GothicHUD : MonoBehaviour
         labelRect.anchorMin = new Vector2(0.5f, 0);
         labelRect.anchorMax = new Vector2(0.5f, 0);
         labelRect.pivot = new Vector2(0.5f, 1);
-        labelRect.anchoredPosition = new Vector2(0, -5);
-        labelRect.sizeDelta = new Vector2(100, 25);
+        labelRect.anchoredPosition = new Vector2(0, -8);
+        labelRect.sizeDelta = new Vector2(140, 30);
 
         boostTimerText = labelObj.AddComponent<TextMeshProUGUI>();
         boostTimerText.text = "BOOST";
-        boostTimerText.fontSize = 14;
+        boostTimerText.fontSize = 18;
+        boostTimerText.fontStyle = FontStyles.Bold;
         boostTimerText.alignment = TextAlignmentOptions.Center;
         boostTimerText.color = new Color(1f, 0.85f, 0.3f);
+        boostTimerText.raycastTarget = false;
     }
 
     void CreateQuestButton(Transform parent)
     {
+        float buttonSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetButtonSize(120f) : 120f;
+        float fontSize = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.GetFontSize(48f) : 48f;
+
         GameObject questBtn = new GameObject("QuestButton");
         questBtn.transform.SetParent(parent);
 
@@ -241,29 +352,73 @@ public class GothicHUD : MonoBehaviour
         btnRect.anchorMin = new Vector2(1, 0.5f);
         btnRect.anchorMax = new Vector2(1, 0.5f);
         btnRect.pivot = new Vector2(1, 0.5f);
-        btnRect.anchoredPosition = new Vector2(-20, 0);
-        btnRect.sizeDelta = new Vector2(80, 80);
+        btnRect.anchoredPosition = new Vector2(-25, 0);
+        btnRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+
+        GameObject borderObj = new GameObject("Border");
+        borderObj.transform.SetParent(questBtn.transform);
+        RectTransform borderRect = borderObj.AddComponent<RectTransform>();
+        borderRect.anchorMin = Vector2.zero;
+        borderRect.anchorMax = Vector2.one;
+        borderRect.offsetMin = new Vector2(-4, -4);
+        borderRect.offsetMax = new Vector2(4, 4);
+        borderObj.transform.SetAsFirstSibling();
+
+        Image borderImg = borderObj.AddComponent<Image>();
+        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.raycastTarget = false;
 
         Image btnBg = questBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.3f, 0.5f, 0.2f, 0.9f);
+        btnBg.color = new Color(0.2f, 0.4f, 0.15f, 0.95f);
+        btnBg.raycastTarget = true;
 
         questButton = questBtn.AddComponent<Button>();
         questButton.onClick.AddListener(OnQuestButtonClicked);
+
+        ColorBlock colors = questButton.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f);
+        questButton.colors = colors;
 
         GameObject iconObj = new GameObject("Icon");
         iconObj.transform.SetParent(questBtn.transform);
         RectTransform iconRect = iconObj.AddComponent<RectTransform>();
         iconRect.anchorMin = Vector2.zero;
         iconRect.anchorMax = Vector2.one;
-        iconRect.offsetMin = new Vector2(10, 10);
-        iconRect.offsetMax = new Vector2(-10, -10);
+        iconRect.offsetMin = new Vector2(8, 8);
+        iconRect.offsetMax = new Vector2(-8, -8);
+
+        GameObject shadowObj = new GameObject("Shadow");
+        shadowObj.transform.SetParent(iconObj.transform);
+        RectTransform shadowRect = shadowObj.AddComponent<RectTransform>();
+        shadowRect.anchorMin = Vector2.zero;
+        shadowRect.anchorMax = Vector2.one;
+        shadowRect.offsetMin = new Vector2(2, -2);
+        shadowRect.offsetMax = new Vector2(2, -2);
+        shadowObj.transform.SetAsFirstSibling();
+
+        TextMeshProUGUI shadowText = shadowObj.AddComponent<TextMeshProUGUI>();
+        shadowText.text = "Q";
+        shadowText.fontSize = fontSize;
+        shadowText.fontStyle = FontStyles.Bold;
+        shadowText.alignment = TextAlignmentOptions.Center;
+        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.enableAutoSizing = true;
+        shadowText.fontSizeMin = 28;
+        shadowText.fontSizeMax = fontSize;
+        shadowText.raycastTarget = false;
 
         TextMeshProUGUI iconText = iconObj.AddComponent<TextMeshProUGUI>();
         iconText.text = "Q";
-        iconText.fontSize = 36;
+        iconText.fontSize = fontSize;
         iconText.fontStyle = FontStyles.Bold;
         iconText.alignment = TextAlignmentOptions.Center;
         iconText.color = Color.white;
+        iconText.enableAutoSizing = true;
+        iconText.fontSizeMin = 28;
+        iconText.fontSizeMax = fontSize;
+        iconText.raycastTarget = false;
 
         GameObject badgeObj = new GameObject("Badge");
         badgeObj.transform.SetParent(questBtn.transform);
@@ -272,11 +427,12 @@ public class GothicHUD : MonoBehaviour
         badgeRect.anchorMin = new Vector2(1, 1);
         badgeRect.anchorMax = new Vector2(1, 1);
         badgeRect.pivot = new Vector2(0.5f, 0.5f);
-        badgeRect.anchoredPosition = new Vector2(-5, -5);
-        badgeRect.sizeDelta = new Vector2(30, 30);
+        badgeRect.anchoredPosition = new Vector2(-8, -8);
+        badgeRect.sizeDelta = new Vector2(36, 36);
 
         Image badgeBg = badgeObj.AddComponent<Image>();
         badgeBg.color = new Color(0.9f, 0.2f, 0.2f);
+        badgeBg.raycastTarget = false;
 
         GameObject badgeText = new GameObject("Text");
         badgeText.transform.SetParent(badgeObj.transform);
@@ -289,10 +445,11 @@ public class GothicHUD : MonoBehaviour
 
         questBadge = badgeText.AddComponent<TextMeshProUGUI>();
         questBadge.text = "0";
-        questBadge.fontSize = 18;
+        questBadge.fontSize = 22;
         questBadge.fontStyle = FontStyles.Bold;
         questBadge.alignment = TextAlignmentOptions.Center;
         questBadge.color = Color.white;
+        questBadge.raycastTarget = false;
 
         badgeObj.SetActive(false);
     }

@@ -48,6 +48,8 @@ public class QuestPanel : MonoBehaviour
 
     void CreatePanel()
     {
+        bool isMobile = MobileUIScaler.Instance != null && MobileUIScaler.Instance.IsMobile;
+
         GameObject canvasObj = new GameObject("QuestPanelCanvas");
         canvasObj.transform.SetParent(transform);
 
@@ -58,8 +60,18 @@ public class QuestPanel : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = isMobile ? 0.5f : 0.5f;
 
         canvasObj.AddComponent<GraphicRaycaster>();
+
+        if (MobileUIScaler.Instance != null)
+        {
+            MobileUIScaler.Instance.ApplyToCanvas(canvas);
+        }
+
+        float panelWidth = isMobile ? 500 : 420;
+        float panelHeight = isMobile ? 700 : 600;
 
         panelRoot = new GameObject("PanelRoot");
         panelRoot.transform.SetParent(canvasObj.transform);
@@ -68,8 +80,8 @@ public class QuestPanel : MonoBehaviour
         panelRect.anchorMin = new Vector2(1, 0.5f);
         panelRect.anchorMax = new Vector2(1, 0.5f);
         panelRect.pivot = new Vector2(1, 0.5f);
-        panelRect.anchoredPosition = new Vector2(-20, 0);
-        panelRect.sizeDelta = new Vector2(420, 600);
+        panelRect.anchoredPosition = new Vector2(-25, 0);
+        panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
 
         Image panelBg = panelRoot.AddComponent<Image>();
         panelBg.color = new Color(0.06f, 0.04f, 0.08f, 0.95f);
@@ -124,6 +136,10 @@ public class QuestPanel : MonoBehaviour
 
     void CreateCloseButton(Transform parent)
     {
+        bool isMobile = MobileUIScaler.Instance != null && MobileUIScaler.Instance.IsMobile;
+        float btnSize = isMobile ? 60 : 40;
+        float fontSize = isMobile ? 32 : 24;
+
         GameObject btnObj = new GameObject("CloseButton");
         btnObj.transform.SetParent(parent);
 
@@ -132,13 +148,19 @@ public class QuestPanel : MonoBehaviour
         rect.anchorMax = new Vector2(1, 1);
         rect.pivot = new Vector2(1, 1);
         rect.anchoredPosition = new Vector2(-10, -10);
-        rect.sizeDelta = new Vector2(40, 40);
+        rect.sizeDelta = new Vector2(btnSize, btnSize);
 
         Image img = btnObj.AddComponent<Image>();
         img.color = new Color(0.6f, 0.2f, 0.2f);
 
         Button btn = btnObj.AddComponent<Button>();
         btn.onClick.AddListener(HidePanel);
+
+        ColorBlock colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f);
+        btn.colors = colors;
 
         GameObject textObj = new GameObject("X");
         textObj.transform.SetParent(btnObj.transform);
@@ -151,7 +173,7 @@ public class QuestPanel : MonoBehaviour
 
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         text.text = "X";
-        text.fontSize = 24;
+        text.fontSize = fontSize;
         text.fontStyle = FontStyles.Bold;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;

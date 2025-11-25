@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using TMPro;
 
 public static class GameBootstrap
@@ -13,24 +15,40 @@ public static class GameBootstrap
         Debug.Log("[Vampires] Bootstrapping The Nine Circles...");
 
         CleanupOldObjects();
+        SetupEventSystem();
         SetupCamera();
         SetupManagers();
+        SetupMobileUI();
         SetupAtmosphere();
         SetupBattlefield();
         SetupThrall();
-        SetupHUD();
         SetupVFXSystems();
         SetupAdSystems();
         SetupQuestSystems();
+        SetupHUD();
 
         Debug.Log("[Vampires] Welcome to the [BATTLEFIELD]. The [HORDE] awaits!");
+    }
+
+    static void SetupEventSystem()
+    {
+        if (Object.FindFirstObjectByType<EventSystem>() != null)
+            return;
+
+        GameObject eventSystem = new GameObject("[EventSystem]");
+        eventSystem.AddComponent<EventSystem>();
+        eventSystem.AddComponent<InputSystemUIInputModule>();
+
+        Debug.Log("[Vampires] EventSystem created for UI input (New Input System)");
     }
 
     static void CleanupOldObjects()
     {
         string[] objectsToClean = {
             "SceneBootstrap",
+            "[EventSystem]",
             "[Managers]",
+            "[MobileUI]",
             "[BATTLEFIELD]",
             "[Atmosphere]",
             "[HUD]",
@@ -82,6 +100,12 @@ public static class GameBootstrap
         managers.AddComponent<RewardHandler>();
         managers.AddComponent<DamageNumberSpawner>();
         managers.AddComponent<CoinDropper>();
+    }
+
+    static void SetupMobileUI()
+    {
+        GameObject mobileUI = new GameObject("[MobileUI]");
+        mobileUI.AddComponent<MobileUIScaler>();
     }
 
     static void SetupAtmosphere()

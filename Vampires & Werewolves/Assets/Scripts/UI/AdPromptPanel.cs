@@ -49,6 +49,9 @@ public class AdPromptPanel : MonoBehaviour
 
     void CreatePanel()
     {
+        bool isMobile = MobileUIScaler.Instance != null && MobileUIScaler.Instance.IsMobile;
+        float scaleFactor = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.ScaleFactor : 1f;
+
         GameObject canvasObj = new GameObject("AdPromptCanvas");
         canvasObj.transform.SetParent(transform);
 
@@ -59,8 +62,15 @@ public class AdPromptPanel : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = isMobile ? 0.5f : 0.5f;
 
         canvasObj.AddComponent<GraphicRaycaster>();
+
+        if (MobileUIScaler.Instance != null)
+        {
+            MobileUIScaler.Instance.ApplyToCanvas(canvas);
+        }
 
         GameObject dimmer = CreateImage(canvasObj.transform, "Dimmer", new Color(0, 0, 0, 0.85f));
         RectTransform dimRect = dimmer.GetComponent<RectTransform>();
@@ -69,12 +79,15 @@ public class AdPromptPanel : MonoBehaviour
         dimRect.offsetMin = Vector2.zero;
         dimRect.offsetMax = Vector2.zero;
 
+        float panelWidth = isMobile ? 800 : 700;
+        float panelHeight = isMobile ? 550 : 500;
+
         panelRoot = new GameObject("PanelRoot");
         panelRoot.transform.SetParent(canvasObj.transform);
         RectTransform panelRect = panelRoot.AddComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = new Vector2(700, 500);
+        panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
         panelRect.anchoredPosition = Vector2.zero;
 
         GameObject panelBg = CreateImage(panelRoot.transform, "Background", new Color(0.08f, 0.05f, 0.1f, 0.98f));
@@ -114,13 +127,18 @@ public class AdPromptPanel : MonoBehaviour
         rewardText.color = new Color(0.3f, 1f, 0.4f);
         rewardText.fontStyle = FontStyles.Bold;
 
+        float watchBtnWidth = isMobile ? 380 : 300;
+        float watchBtnHeight = isMobile ? 90 : 70;
+        float skipBtnWidth = isMobile ? 260 : 200;
+        float skipBtnHeight = isMobile ? 65 : 50;
+
         watchButton = CreateButton(panelRoot.transform, "WatchButton", "WATCH AD",
-            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 130), new Vector2(300, 70),
+            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 150), new Vector2(watchBtnWidth, watchBtnHeight),
             new Color(0.2f, 0.7f, 0.3f));
         watchButton.onClick.AddListener(OnWatchButtonClicked);
 
         skipButton = CreateButton(panelRoot.transform, "SkipButton", "NO THANKS",
-            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(200, 50),
+            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(skipBtnWidth, skipBtnHeight),
             new Color(0.3f, 0.25f, 0.3f));
         skipButton.onClick.AddListener(OnSkipButtonClicked);
     }
