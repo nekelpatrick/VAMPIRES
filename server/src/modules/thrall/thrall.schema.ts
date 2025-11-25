@@ -11,6 +11,7 @@ export const thrallSchema = z.object({
   ownerId: z.string().min(1),
   archetype: z.enum(['[WEREWOLF]', '[THRALL]']),
   level: z.number().int().nonnegative().default(1),
+  xp: z.number().int().nonnegative().default(0),
   hp: z.number().nonnegative(),
   maxHp: z.number().nonnegative(),
   attack: z.number().nonnegative(),
@@ -49,3 +50,21 @@ export const updateThrallStatusRequestSchema = z.object({
 })
 
 export type UpdateThrallStatusRequest = z.infer<typeof updateThrallStatusRequestSchema>
+
+export const syncThrallProgressionRequestSchema = z.object({
+  thrallId: thrallIdSchema,
+  level: z.number().int().positive(),
+  xp: z.number().int().nonnegative(),
+  attack: z.number().nonnegative().optional(),
+  defense: z.number().nonnegative().optional(),
+  maxHp: z.number().nonnegative().optional()
+})
+
+export type SyncThrallProgressionRequest = z.infer<typeof syncThrallProgressionRequestSchema>
+
+export const syncThrallProgressionResponseSchema = z.object({
+  success: z.boolean(),
+  thrall: thrallSchema.optional()
+})
+
+export type SyncThrallProgressionResponse = z.infer<typeof syncThrallProgressionResponseSchema>

@@ -328,6 +328,7 @@ public static class GameBootstrap
         GameObject vfxSystems = new GameObject("[VFX]");
         vfxSystems.AddComponent<BloodParticleSystem>();
         vfxSystems.AddComponent<ScreenEffects>();
+        vfxSystems.AddComponent<LevelUpVFX>();
     }
 
     static void SetupAdSystems()

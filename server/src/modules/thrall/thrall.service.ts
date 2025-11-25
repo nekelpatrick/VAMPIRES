@@ -1,6 +1,6 @@
 import type { Pool } from 'pg'
 
-import type { Thrall, ThrallStatus, CreateThrallRequest } from './thrall.schema'
+import type { Thrall, ThrallStatus, CreateThrallRequest, SyncThrallProgressionRequest } from './thrall.schema'
 
 const BASE_STATS = {
   '[WEREWOLF]': { hp: 150, attack: 25, defense: 10, speed: 1.2 },
@@ -24,6 +24,7 @@ export class ThrallService {
       ownerId: request.ownerId,
       archetype: request.archetype,
       level: 1,
+      xp: 0,
       hp: baseStats.hp,
       maxHp: baseStats.hp,
       attack: baseStats.attack,
@@ -41,10 +42,10 @@ export class ThrallService {
 
     if (this.pool) {
       await this.pool.query(
-        `INSERT INTO thralls (id, owner_id, archetype, level, hp, max_hp, attack, defense, speed, status, pvp_wins, pvp_losses, death_count, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        `INSERT INTO thralls (id, owner_id, archetype, level, xp, hp, max_hp, attack, defense, speed, status, pvp_wins, pvp_losses, death_count, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
         [
-          thrall.id, thrall.ownerId, thrall.archetype, thrall.level,
+          thrall.id, thrall.ownerId, thrall.archetype, thrall.level, thrall.xp,
           thrall.hp, thrall.maxHp, thrall.attack, thrall.defense, thrall.speed,
           thrall.status, thrall.pvpWins, thrall.pvpLosses, thrall.deathCount,
           thrall.createdAt, thrall.updatedAt
@@ -64,6 +65,7 @@ export class ThrallService {
         owner_id: string
         archetype: '[WEREWOLF]' | '[THRALL]'
         level: number
+        xp: number
         hp: number
         max_hp: number
         attack: number
@@ -90,6 +92,7 @@ export class ThrallService {
         ownerId: row.owner_id,
         archetype: row.archetype,
         level: row.level,
+        xp: row.xp ?? 0,
         hp: row.hp,
         maxHp: row.max_hp,
         attack: row.attack,
@@ -217,12 +220,37 @@ export class ThrallService {
     return thrall.maxHp + thrall.attack * 2 + thrall.defense * 1.5
   }
 
+  async syncProgression(request: SyncThrallProgressionRequest): Promise<Thrall | null> {
+    const thrall = await this.getThrall(request.thrallId)
+    if (!thrall) return null
+
+    thrall.level = request.level
+    thrall.xp = request.xp
+    thrall.updatedAt = new Date()
+
+    if (request.attack !== undefined) thrall.attack = request.attack
+    if (request.defense !== undefined) thrall.defense = request.defense
+    if (request.maxHp !== undefined) thrall.maxHp = request.maxHp
+
+    if (this.pool) {
+      await this.pool.query(
+        `UPDATE thralls SET level = $1, xp = $2, attack = $3, defense = $4, max_hp = $5, updated_at = $6 WHERE id = $7`,
+        [thrall.level, thrall.xp, thrall.attack, thrall.defense, thrall.maxHp, thrall.updatedAt, thrall.id]
+      )
+    } else {
+      this.inMemoryThralls.set(thrall.id, thrall)
+    }
+
+    return thrall
+  }
+
   private rowToThrall(row: Record<string, unknown>): Thrall {
     return {
       id: row.id as string,
       ownerId: row.owner_id as string,
       archetype: row.archetype as '[WEREWOLF]' | '[THRALL]',
       level: row.level as number,
+      xp: (row.xp as number) ?? 0,
       hp: row.hp as number,
       maxHp: row.max_hp as number,
       attack: row.attack as number,

@@ -31,6 +31,14 @@ public class GothicHUD : MonoBehaviour
     private ShopPanel shopPanel;
     private SubscriptionBanner subscriptionBanner;
 
+    [Header("Progression UI")]
+    private TextMeshProUGUI powerScoreText;
+    private TextMeshProUGUI levelText;
+    private Image xpBarFill;
+    private TextMeshProUGUI xpText;
+    private int displayedPowerScore;
+    private float powerScorePulseTimer;
+
     private CurrencyManager currencyManager;
     private HordeSpawner hordeSpawner;
     private CombatManager combatManager;
@@ -76,7 +84,98 @@ public class GothicHUD : MonoBehaviour
             thrall = combatManager.GetThrall();
         }
 
+        ThrallController.OnXPGained += OnXPGained;
+        ThrallController.OnLevelUp += OnLevelUp;
+        ThrallController.OnPowerScoreChanged += OnPowerScoreChanged;
+
         StartCoroutine(BindAdAndQuestManagers());
+        StartCoroutine(BindThrallForProgression());
+    }
+
+    System.Collections.IEnumerator BindThrallForProgression()
+    {
+        int attempts = 0;
+        while (thrall == null && attempts < 20)
+        {
+            if (combatManager != null)
+            {
+                thrall = combatManager.GetThrall();
+            }
+            if (thrall == null)
+            {
+                yield return new WaitForSeconds(0.2f);
+                attempts++;
+            }
+        }
+
+        if (thrall != null)
+        {
+            UpdateProgressionDisplay();
+        }
+    }
+
+    void OnXPGained(int amount, int total)
+    {
+        UpdateXPBar();
+    }
+
+    void OnLevelUp(int newLevel)
+    {
+        UpdateLevelDisplay();
+        UpdateXPBar();
+    }
+
+    void OnPowerScoreChanged(int newScore)
+    {
+        UpdatePowerScoreDisplay(newScore);
+    }
+
+    void UpdateProgressionDisplay()
+    {
+        if (thrall == null) return;
+
+        displayedPowerScore = thrall.PowerScore;
+        if (powerScoreText != null)
+        {
+            powerScoreText.text = $"POWER: {displayedPowerScore:N0}";
+        }
+
+        if (levelText != null)
+        {
+            levelText.text = $"Lv. {thrall.ThrallLevel}";
+        }
+
+        UpdateXPBar();
+    }
+
+    void UpdatePowerScoreDisplay(int targetScore)
+    {
+        if (powerScoreText == null) return;
+
+        powerScoreText.text = $"POWER: {targetScore:N0}";
+        powerScorePulseTimer = 0.5f;
+    }
+
+    void UpdateLevelDisplay()
+    {
+        if (levelText == null || thrall == null) return;
+        levelText.text = $"Lv. {thrall.ThrallLevel}";
+    }
+
+    void UpdateXPBar()
+    {
+        if (thrall == null) return;
+
+        if (xpBarFill != null)
+        {
+            float xpPercent = (float)thrall.CurrentXP / thrall.XPToNextLevel;
+            xpBarFill.fillAmount = Mathf.Clamp01(xpPercent);
+        }
+
+        if (xpText != null)
+        {
+            xpText.text = $"{thrall.CurrentXP} / {thrall.XPToNextLevel}";
+        }
     }
 
     System.Collections.IEnumerator BindAdAndQuestManagers()
@@ -227,6 +326,8 @@ public class GothicHUD : MonoBehaviour
         canvasObj.AddComponent<GraphicRaycaster>();
 
         CreateTopBar(canvasObj.transform);
+        CreatePowerScoreDisplay(canvasObj.transform);
+        CreateXPBar(canvasObj.transform);
         CreateBottomBar(canvasObj.transform);
         CreateKillCounter(canvasObj.transform);
         CreateComboMeter(canvasObj.transform);
@@ -647,6 +748,142 @@ public class GothicHUD : MonoBehaviour
         thrallHealthFill = CreateHealthBar(topBar.transform);
     }
 
+    void CreatePowerScoreDisplay(Transform parent)
+    {
+        GameObject powerContainer = new GameObject("PowerScoreDisplay");
+        powerContainer.transform.SetParent(parent);
+
+        RectTransform rect = powerContainer.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0, 1);
+        rect.anchorMax = new Vector2(0, 1);
+        rect.pivot = new Vector2(0, 1);
+        rect.anchoredPosition = new Vector2(25, -90);
+        rect.sizeDelta = new Vector2(300, 50);
+
+        GameObject bgObj = new GameObject("Background");
+        bgObj.transform.SetParent(powerContainer.transform);
+
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
+
+        Image bgImage = bgObj.AddComponent<Image>();
+        bgImage.color = new Color(0.04f, 0.02f, 0.05f, 0.9f);
+
+        AddGothicBorder(powerContainer.transform, new Color(0.7f, 0.5f, 0.2f, 0.7f));
+
+        GameObject textObj = new GameObject("PowerText");
+        textObj.transform.SetParent(powerContainer.transform);
+
+        RectTransform textRect = textObj.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(15, 0);
+        textRect.offsetMax = new Vector2(-15, 0);
+
+        powerScoreText = textObj.AddComponent<TextMeshProUGUI>();
+        powerScoreText.text = "POWER: 0";
+        powerScoreText.fontSize = 28;
+        powerScoreText.fontStyle = FontStyles.Bold;
+        powerScoreText.alignment = TextAlignmentOptions.MidlineLeft;
+        powerScoreText.color = new Color(1f, 0.85f, 0.3f);
+    }
+
+    void CreateXPBar(Transform parent)
+    {
+        GameObject xpContainer = new GameObject("XPBarContainer");
+        xpContainer.transform.SetParent(parent);
+
+        RectTransform rect = xpContainer.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0, 1);
+        rect.anchorMax = new Vector2(0, 1);
+        rect.pivot = new Vector2(0, 1);
+        rect.anchoredPosition = new Vector2(25, -145);
+        rect.sizeDelta = new Vector2(300, 40);
+
+        GameObject bgObj = new GameObject("Background");
+        bgObj.transform.SetParent(xpContainer.transform);
+
+        RectTransform bgRect = bgObj.AddComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
+
+        Image bgImage = bgObj.AddComponent<Image>();
+        bgImage.color = new Color(0.08f, 0.04f, 0.06f, 0.95f);
+
+        AddGothicBorder(xpContainer.transform, new Color(0.5f, 0.35f, 0.2f, 0.6f));
+
+        GameObject levelBadge = new GameObject("LevelBadge");
+        levelBadge.transform.SetParent(xpContainer.transform);
+
+        RectTransform levelRect = levelBadge.AddComponent<RectTransform>();
+        levelRect.anchorMin = new Vector2(0, 0.5f);
+        levelRect.anchorMax = new Vector2(0, 0.5f);
+        levelRect.pivot = new Vector2(0, 0.5f);
+        levelRect.anchoredPosition = new Vector2(8, 0);
+        levelRect.sizeDelta = new Vector2(60, 30);
+
+        Image levelBg = levelBadge.AddComponent<Image>();
+        levelBg.color = new Color(0.5f, 0.25f, 0.15f, 1f);
+
+        levelText = CreateGothicText(levelBadge.transform, "LevelText", "Lv. 1", 18,
+            new Color(1f, 0.9f, 0.7f), FontStyles.Bold, 60);
+        RectTransform levelTextRect = levelText.GetComponent<RectTransform>();
+        levelTextRect.anchorMin = Vector2.zero;
+        levelTextRect.anchorMax = Vector2.one;
+        levelTextRect.offsetMin = Vector2.zero;
+        levelTextRect.offsetMax = Vector2.zero;
+
+        GameObject barContainer = new GameObject("BarContainer");
+        barContainer.transform.SetParent(xpContainer.transform);
+
+        RectTransform barRect = barContainer.AddComponent<RectTransform>();
+        barRect.anchorMin = new Vector2(0, 0.5f);
+        barRect.anchorMax = new Vector2(1, 0.5f);
+        barRect.pivot = new Vector2(0, 0.5f);
+        barRect.anchoredPosition = new Vector2(75, 0);
+        barRect.sizeDelta = new Vector2(-90, 18);
+
+        Image barBg = barContainer.AddComponent<Image>();
+        barBg.color = new Color(0.15f, 0.08f, 0.1f, 1f);
+
+        GameObject fillObj = new GameObject("Fill");
+        fillObj.transform.SetParent(barContainer.transform);
+
+        RectTransform fillRect = fillObj.AddComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.pivot = new Vector2(0, 0.5f);
+        fillRect.offsetMin = new Vector2(2, 2);
+        fillRect.offsetMax = new Vector2(-2, -2);
+
+        xpBarFill = fillObj.AddComponent<Image>();
+        xpBarFill.color = new Color(0.4f, 0.8f, 0.3f);
+        xpBarFill.type = Image.Type.Filled;
+        xpBarFill.fillMethod = Image.FillMethod.Horizontal;
+        xpBarFill.fillAmount = 0f;
+
+        GameObject xpTextObj = new GameObject("XPText");
+        xpTextObj.transform.SetParent(barContainer.transform);
+
+        RectTransform xpTextRect = xpTextObj.AddComponent<RectTransform>();
+        xpTextRect.anchorMin = Vector2.zero;
+        xpTextRect.anchorMax = Vector2.one;
+        xpTextRect.offsetMin = Vector2.zero;
+        xpTextRect.offsetMax = Vector2.zero;
+
+        xpText = xpTextObj.AddComponent<TextMeshProUGUI>();
+        xpText.text = "0 / 100";
+        xpText.fontSize = 14;
+        xpText.fontStyle = FontStyles.Bold;
+        xpText.alignment = TextAlignmentOptions.Center;
+        xpText.color = Color.white;
+    }
+
     void CreateCurrencyDisplay(Transform parent, string name, string label, Color color, out TextMeshProUGUI valueText)
     {
         GameObject container = new GameObject(name);
@@ -877,6 +1114,21 @@ public class GothicHUD : MonoBehaviour
         UpdateThrallHealth();
         UpdateCombo();
         UpdateBoostUI();
+        UpdatePowerScorePulse();
+    }
+
+    void UpdatePowerScorePulse()
+    {
+        if (powerScoreText == null || powerScorePulseTimer <= 0) return;
+
+        powerScorePulseTimer -= Time.deltaTime;
+        float pulse = 1f + Mathf.Sin(powerScorePulseTimer * 20f) * 0.1f;
+        powerScoreText.transform.localScale = Vector3.one * pulse;
+
+        if (powerScorePulseTimer <= 0)
+        {
+            powerScoreText.transform.localScale = Vector3.one;
+        }
     }
 
     void UpdateBoostUI()
@@ -1078,6 +1330,10 @@ public class GothicHUD : MonoBehaviour
             questManager.OnQuestCompleted -= OnQuestCompleted;
             questManager.OnQuestClaimed -= OnQuestStatusChanged;
         }
+
+        ThrallController.OnXPGained -= OnXPGained;
+        ThrallController.OnLevelUp -= OnLevelUp;
+        ThrallController.OnPowerScoreChanged -= OnPowerScoreChanged;
     }
 }
 

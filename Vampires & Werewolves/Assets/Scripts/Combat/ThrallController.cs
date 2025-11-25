@@ -1,16 +1,76 @@
+using System;
 using UnityEngine;
 
 public class ThrallController : CombatEntity
 {
+    public static event Action<int, int> OnXPGained;
+    public static event Action<int> OnLevelUp;
+    public static event Action<int> OnPowerScoreChanged;
+
     [SerializeField] private ThrallData thrallData;
 
     private CombatManager combatManager;
+
+    public int ThrallLevel { get; private set; } = 1;
+    public int CurrentXP { get; private set; } = 0;
+    public int XPToNextLevel => CalculateXPForLevel(ThrallLevel + 1);
+    public int PowerScore => CalculatePowerScore();
 
     protected override void Awake()
     {
         base.Awake();
         CreateDefaultData();
         facingDirection = 1;
+    }
+
+    int CalculateXPForLevel(int level)
+    {
+        return Mathf.RoundToInt(100 * Mathf.Pow(level, 1.5f));
+    }
+
+    int CalculatePowerScore()
+    {
+        return Mathf.RoundToInt(
+            (Stats.attack * 2f) + 
+            Stats.defense + 
+            (Stats.maxHealth / 10f) + 
+            (Stats.speed * 100f)
+        );
+    }
+
+    public void GainXP(int amount)
+    {
+        if (amount <= 0) return;
+
+        int previousXP = CurrentXP;
+        CurrentXP += amount;
+
+        OnXPGained?.Invoke(amount, CurrentXP);
+
+        while (CurrentXP >= XPToNextLevel)
+        {
+            LevelUp();
+        }
+    }
+
+    void LevelUp()
+    {
+        CurrentXP -= XPToNextLevel;
+        ThrallLevel++;
+
+        CombatStats currentStats = Stats;
+        currentStats.attack += 2f;
+        currentStats.defense += 1f;
+        currentStats.maxHealth += 15f;
+
+        float healthPercent = CurrentHealth / Stats.maxHealth;
+        Initialize(currentStats);
+        CurrentHealth = Stats.maxHealth * healthPercent;
+
+        OnLevelUp?.Invoke(ThrallLevel);
+        OnPowerScoreChanged?.Invoke(PowerScore);
+
+        Debug.Log($"[Thrall] LEVEL UP! Now level {ThrallLevel}");
     }
 
     void CreateDefaultData()

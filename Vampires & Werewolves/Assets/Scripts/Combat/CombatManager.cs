@@ -129,6 +129,48 @@ public class CombatManager : MonoBehaviour
     public void OnEnemyKilled(EnemyController enemy)
     {
         OnEnemyDeath?.Invoke(enemy);
+        GrantXPForKill(enemy);
+    }
+
+    void GrantXPForKill(EnemyController enemy)
+    {
+        if (thrall == null) return;
+
+        int baseXP = 10;
+        int currentWave = 1;
+
+        HordeSpawner spawner = HordeSpawner.Instance;
+        if (spawner != null)
+        {
+            currentWave = spawner.GetCurrentWave();
+        }
+
+        float waveMultiplier = 1f + (currentWave * 0.1f);
+        float enemyMultiplier = GetEnemyXPMultiplier(enemy);
+
+        int xpGained = Mathf.RoundToInt(baseXP * waveMultiplier * enemyMultiplier);
+        thrall.GainXP(xpGained);
+    }
+
+    float GetEnemyXPMultiplier(EnemyController enemy)
+    {
+        if (enemy == null) return 1f;
+
+        float healthRatio = enemy.Stats.maxHealth / 100f;
+        float attackRatio = enemy.Stats.attack / 10f;
+
+        float baseMultiplier = Mathf.Max(1f, (healthRatio + attackRatio) / 2f);
+
+        if (enemy.Stats.maxHealth > 500f)
+        {
+            return baseMultiplier * 5f;
+        }
+        if (enemy.Stats.maxHealth > 200f)
+        {
+            return baseMultiplier * 2f;
+        }
+
+        return baseMultiplier;
     }
 
     public void OnThrallDeath()

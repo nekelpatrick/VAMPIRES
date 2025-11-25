@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { procedure, router } from '../../trpc/core'
-import { thrallSchema } from './thrall.schema'
+import { thrallSchema, syncThrallProgressionRequestSchema, syncThrallProgressionResponseSchema } from './thrall.schema'
 import { thrallService } from './thrall.service'
 
 export const thrallRouter = router({
@@ -28,6 +28,17 @@ export const thrallRouter = router({
         status: thrall.status,
         diedAt: thrall.diedAt,
         reviveAt: thrall.reviveAt
+      }
+    }),
+
+  syncProgression: procedure
+    .input(syncThrallProgressionRequestSchema)
+    .output(syncThrallProgressionResponseSchema)
+    .mutation(async ({ input }) => {
+      const thrall = await thrallService.syncProgression(input)
+      return {
+        success: thrall !== null,
+        thrall: thrall ?? undefined
       }
     })
 })
