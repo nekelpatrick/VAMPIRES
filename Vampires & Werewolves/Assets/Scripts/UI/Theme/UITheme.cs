@@ -8,6 +8,7 @@ public class UITheme : ScriptableObject
     public Color backgroundSecondary = new Color(0.08f, 0.04f, 0.06f, 0.95f);
     public Color backgroundPanel = new Color(0.05f, 0.03f, 0.05f, 0.95f);
     public Color backgroundDark = new Color(0.02f, 0.01f, 0.03f, 1f);
+    public Color backgroundLight = new Color(0.15f, 0.1f, 0.12f, 0.9f);
     public Color backgroundOverlay = new Color(0f, 0f, 0f, 0.7f);
 
     [Header("Border Colors")]
@@ -44,6 +45,18 @@ public class UITheme : ScriptableObject
     public Color statusDead = new Color(0.4f, 0.1f, 0.1f, 1f);
     public Color statusActive = new Color(0.2f, 0.5f, 0.2f, 1f);
     public Color statusWarning = new Color(0.8f, 0.6f, 0.1f, 1f);
+    public Color successColor = new Color(0.2f, 0.5f, 0.2f, 0.95f);
+    public Color dangerColor = new Color(0.6f, 0.15f, 0.15f, 0.95f);
+
+    [Header("Health Gradient")]
+    public Color healthLow = new Color(0.9f, 0.2f, 0.2f, 1f);
+    public Color healthMedium = new Color(0.9f, 0.6f, 0.2f, 1f);
+    public Color healthHigh = new Color(0.3f, 0.8f, 0.3f, 1f);
+
+    [Header("Accent Colors")]
+    public Color accentBrown = new Color(0.5f, 0.35f, 0.15f, 0.95f);
+    public Color bloodRed = new Color(0.9f, 0.2f, 0.2f, 1f);
+    public Color shadowColor = new Color(0f, 0f, 0f, 0.6f);
 
     [Header("Typography - Font Sizes")]
     public float fontSizeXS = 14f;
@@ -99,5 +112,12 @@ public class UITheme : ScriptableObject
         }
         return baseSize;
     }
+
+    public float spacingMedium => spacingMD;
+    public float spacingLarge => spacingLG;
+    public float spacingExtraLarge => spacingXL;
+    public float fontSizeSmall => fontSizeSM;
+    public float fontSizeMedium => fontSizeMD;
+    public float fontSizeLarge => fontSizeLG;
 }
 

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class HordeSpawner : MonoBehaviour
 {
+    public static HordeSpawner Instance { get; private set; }
+
     public event Action<int> OnWaveStarted;
     public event Action<int> OnWaveCompleted;
 
@@ -27,6 +29,13 @@ public class HordeSpawner : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         CreateDefaultEnemyData();
         PrewarmPool(20);
     }

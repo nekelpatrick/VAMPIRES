@@ -268,12 +268,10 @@ public static class GameBootstrap
         GameObject thrall = new GameObject("[THRALL] Werewolf");
         thrall.tag = "Player";
         thrall.transform.position = new Vector3(-6, 0, 0);
-        thrall.transform.localScale = Vector3.one * 0.5f;
+        thrall.transform.localScale = Vector3.one;
 
         thrall.AddComponent<ThrallController>();
         thrall.AddComponent<AttackAnimator>();
-
-        UnitVisualFactory.CreateWerewolfVisual(thrall.transform);
 
         CreateWorldSpaceHealthBar(thrall.transform, new Color(0.2f, 0.8f, 0.3f));
     }

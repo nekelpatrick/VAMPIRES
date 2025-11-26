@@ -12,5 +12,9 @@ public class ThrallData : ScriptableObject
         speed = 1.2f
     };
     public Color color = Color.blue;
+    public GameObject visualPrefab;
+    public RuntimeAnimatorController animatorController;
+    public Vector3 visualOffset = new Vector3(0f, 0f, 0f);
+    public Vector3 visualScale = Vector3.one;
 }
 

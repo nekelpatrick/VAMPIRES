@@ -22,22 +22,44 @@ public class ShopPanel : MonoBehaviour, IThemeable
     public event Action<string> OnItemPurchased;
 
     [Header("Main Panel")]
+    private Canvas panelCanvas;
+    private GameObject canvasRoot;
     private GameObject panelRoot;
+    private Image panelBackground;
     private CanvasGroup canvasGroup;
+
+    [Header("Header")]
+    private Image headerBackground;
+    private TextMeshProUGUI titleText;
 
     [Header("Tabs")]
     private Button upgradesTabButton;
+    private Image upgradesTabImage;
+    private TextMeshProUGUI upgradesTabText;
     private Button itemsTabButton;
+    private Image itemsTabImage;
+    private TextMeshProUGUI itemsTabText;
     private Button subscriptionTabButton;
+    private Image subscriptionTabImage;
+    private TextMeshProUGUI subscriptionTabText;
     private ShopTab currentTab = ShopTab.Upgrades;
 
     [Header("Content")]
+    private Image contentBackground;
     private Transform upgradesContent;
     private Transform itemsContent;
     private Transform subscriptionContent;
 
     [Header("Close")]
     private Button closeButton;
+    private Image closeButtonImage;
+    private TextMeshProUGUI closeButtonText;
+
+    private List<Image> itemCardBackgrounds = new List<Image>();
+    private List<TextMeshProUGUI> itemNameTexts = new List<TextMeshProUGUI>();
+    private List<TextMeshProUGUI> itemDescTexts = new List<TextMeshProUGUI>();
+    private List<Image> buyButtonImages = new List<Image>();
+    private List<TextMeshProUGUI> priceTexts = new List<TextMeshProUGUI>();
 
     private CurrencyManager currencyManager;
     private bool isOpen;
@@ -48,17 +70,57 @@ public class ShopPanel : MonoBehaviour, IThemeable
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
-
-        UIThemeManager.Instance?.RegisterElement(this);
     }
 
     public void ApplyTheme(UITheme theme)
     {
+        if (theme == null) return;
+
+        if (panelBackground != null)
+            panelBackground.color = theme.backgroundPanel;
+
+        if (headerBackground != null)
+            headerBackground.color = theme.backgroundDark;
+
+        if (titleText != null)
+            titleText.color = theme.textGold;
+
+        if (contentBackground != null)
+            contentBackground.color = theme.backgroundDark;
+
+        if (closeButtonImage != null)
+            closeButtonImage.color = theme.dangerColor;
+
+        if (closeButtonText != null)
+            closeButtonText.color = theme.textPrimary;
+
+        foreach (var img in itemCardBackgrounds)
+        {
+            if (img != null) img.color = theme.backgroundLight;
+        }
+
+        foreach (var txt in itemNameTexts)
+        {
+            if (txt != null) txt.color = theme.textGold;
+        }
+
+        foreach (var txt in itemDescTexts)
+        {
+            if (txt != null) txt.color = theme.textSecondary;
+        }
+
+        foreach (var img in buyButtonImages)
+        {
+            if (img != null) img.color = theme.accentBrown;
+        }
+
+        UpdateTabButtonColors();
     }
 
     void Start()
     {
         Initialize();
+        UIThemeManager.Instance?.RegisterElement(this);
     }
 
     void Update()
@@ -86,30 +148,18 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void CreateShopUI()
     {
-        GameObject canvasObj = new GameObject("ShopPanel_Canvas");
-        canvasObj.transform.SetParent(transform);
+        canvasRoot = UIFactory.CreateCanvas("ShopPanel_Canvas", transform, 200);
+        panelCanvas = canvasRoot.GetComponent<Canvas>();
 
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 200;
-
-        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-
-        canvasObj.AddComponent<GraphicRaycaster>();
-
-        panelRoot = new GameObject("PanelRoot");
-        panelRoot.transform.SetParent(canvasObj.transform);
-
-        RectTransform rootRect = panelRoot.AddComponent<RectTransform>();
+        panelRoot = UIFactory.CreatePanel("PanelRoot", canvasRoot.transform);
+        RectTransform rootRect = panelRoot.GetComponent<RectTransform>();
         rootRect.anchorMin = Vector2.zero;
         rootRect.anchorMax = Vector2.one;
         rootRect.offsetMin = Vector2.zero;
         rootRect.offsetMax = Vector2.zero;
 
-        Image bgOverlay = panelRoot.AddComponent<Image>();
-        bgOverlay.color = new Color(0, 0, 0, 0.85f);
+        Image dimmer = panelRoot.GetComponent<Image>();
+        dimmer.color = new Color(0, 0, 0, 0.85f);
 
         canvasGroup = panelRoot.AddComponent<CanvasGroup>();
 
@@ -118,19 +168,17 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void CreateMainPanel()
     {
-        GameObject mainPanel = new GameObject("MainPanel");
-        mainPanel.transform.SetParent(panelRoot.transform);
-
-        RectTransform panelRect = mainPanel.AddComponent<RectTransform>();
+        GameObject mainPanel = UIFactory.CreatePanel("MainPanel", panelRoot.transform);
+        RectTransform panelRect = mainPanel.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.1f, 0.1f);
         panelRect.anchorMax = new Vector2(0.9f, 0.9f);
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
 
-        Image panelBg = mainPanel.AddComponent<Image>();
-        panelBg.color = new Color(0.08f, 0.05f, 0.08f, 0.98f);
+        panelBackground = mainPanel.GetComponent<Image>();
+        panelBackground.color = Theme.backgroundPanel;
 
-        AddGothicBorder(mainPanel.transform, new Color(0.7f, 0.5f, 0.2f, 0.9f));
+        UIFactory.AddBorder(mainPanel.transform, Theme.borderGold, 3);
 
         CreateHeader(mainPanel.transform);
         CreateTabs(mainPanel.transform);
@@ -140,112 +188,90 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void CreateHeader(Transform parent)
     {
-        GameObject header = new GameObject("Header");
-        header.transform.SetParent(parent);
-
-        RectTransform headerRect = header.AddComponent<RectTransform>();
+        GameObject header = UIFactory.CreatePanel("Header", parent);
+        RectTransform headerRect = header.GetComponent<RectTransform>();
         headerRect.anchorMin = new Vector2(0, 1);
         headerRect.anchorMax = new Vector2(1, 1);
         headerRect.pivot = new Vector2(0.5f, 1);
         headerRect.anchoredPosition = new Vector2(0, -10);
         headerRect.sizeDelta = new Vector2(-40, 80);
 
-        Image headerBg = header.AddComponent<Image>();
-        headerBg.color = new Color(0.12f, 0.08f, 0.1f, 0.95f);
+        headerBackground = header.GetComponent<Image>();
+        headerBackground.color = Theme.backgroundDark;
 
-        GameObject titleObj = new GameObject("Title");
-        titleObj.transform.SetParent(header.transform);
-
-        RectTransform titleRect = titleObj.AddComponent<RectTransform>();
+        titleText = UIFactory.CreateTitle("Title", header.transform, "BLOOD MARKET").GetComponent<TextMeshProUGUI>();
+        RectTransform titleRect = titleText.GetComponent<RectTransform>();
         titleRect.anchorMin = Vector2.zero;
         titleRect.anchorMax = Vector2.one;
         titleRect.offsetMin = new Vector2(20, 10);
         titleRect.offsetMax = new Vector2(-20, -10);
-
-        TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-        titleText.text = "BLOOD MARKET";
-        titleText.fontSize = 48;
-        titleText.fontStyle = FontStyles.Bold;
+        titleText.fontSize = Theme.GetScaledFontSize(48);
         titleText.alignment = TextAlignmentOptions.Center;
-        titleText.color = new Color(0.9f, 0.7f, 0.3f);
     }
 
     void CreateTabs(Transform parent)
     {
-        GameObject tabBar = new GameObject("TabBar");
-        tabBar.transform.SetParent(parent);
-
-        RectTransform tabRect = tabBar.AddComponent<RectTransform>();
+        GameObject tabBar = UIFactory.CreatePanel("TabBar", parent);
+        RectTransform tabRect = tabBar.GetComponent<RectTransform>();
         tabRect.anchorMin = new Vector2(0, 1);
         tabRect.anchorMax = new Vector2(1, 1);
         tabRect.pivot = new Vector2(0.5f, 1);
         tabRect.anchoredPosition = new Vector2(0, -100);
         tabRect.sizeDelta = new Vector2(-40, 60);
 
+        tabBar.GetComponent<Image>().color = Color.clear;
+
         HorizontalLayoutGroup layout = tabBar.AddComponent<HorizontalLayoutGroup>();
-        layout.spacing = 10;
+        layout.spacing = Theme.spacingMedium;
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.childControlWidth = true;
         layout.childControlHeight = true;
         layout.childForceExpandWidth = true;
 
-        upgradesTabButton = CreateTabButton(tabBar.transform, "UPGRADES", () => { if (CanProcessInput()) SwitchTab(ShopTab.Upgrades); });
-        itemsTabButton = CreateTabButton(tabBar.transform, "ITEMS", () => { if (CanProcessInput()) SwitchTab(ShopTab.Items); });
-        subscriptionTabButton = CreateTabButton(tabBar.transform, "[ASHEN ONE]", () => { if (CanProcessInput()) SwitchTab(ShopTab.Subscription); });
+        var upgradesResult = CreateTabButton(tabBar.transform, "UPGRADES", () => { if (CanProcessInput()) SwitchTab(ShopTab.Upgrades); });
+        upgradesTabButton = upgradesResult.Item1;
+        upgradesTabImage = upgradesResult.Item2;
+        upgradesTabText = upgradesResult.Item3;
+
+        var itemsResult = CreateTabButton(tabBar.transform, "ITEMS", () => { if (CanProcessInput()) SwitchTab(ShopTab.Items); });
+        itemsTabButton = itemsResult.Item1;
+        itemsTabImage = itemsResult.Item2;
+        itemsTabText = itemsResult.Item3;
+
+        var subscriptionResult = CreateTabButton(tabBar.transform, "[ASHEN ONE]", () => { if (CanProcessInput()) SwitchTab(ShopTab.Subscription); });
+        subscriptionTabButton = subscriptionResult.Item1;
+        subscriptionTabImage = subscriptionResult.Item2;
+        subscriptionTabText = subscriptionResult.Item3;
     }
 
-    Button CreateTabButton(Transform parent, string label, Action onClick)
+    (Button, Image, TextMeshProUGUI) CreateTabButton(Transform parent, string label, Action onClick)
     {
-        GameObject btnObj = new GameObject(label + "Tab");
-        btnObj.transform.SetParent(parent);
-
-        RectTransform btnRect = btnObj.AddComponent<RectTransform>();
+        GameObject btnObj = UIFactory.CreateButton(label + "Tab", parent, label, onClick);
+        RectTransform btnRect = btnObj.GetComponent<RectTransform>();
         btnRect.sizeDelta = new Vector2(200, 50);
 
-        Image btnBg = btnObj.AddComponent<Image>();
-        btnBg.color = new Color(0.15f, 0.1f, 0.12f, 0.9f);
+        Button btn = btnObj.GetComponent<Button>();
+        Image btnBg = btnObj.GetComponent<Image>();
+        btnBg.color = Theme.backgroundLight;
 
-        Button btn = btnObj.AddComponent<Button>();
-        btn.onClick.AddListener(() => onClick?.Invoke());
+        TextMeshProUGUI text = btnObj.GetComponentInChildren<TextMeshProUGUI>();
+        text.fontSize = Theme.GetScaledFontSize(24);
+        text.color = Theme.textSecondary;
 
-        ColorBlock colors = btn.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f);
-        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f);
-        btn.colors = colors;
-
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(btnObj.transform);
-
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-        text.text = label;
-        text.fontSize = 24;
-        text.fontStyle = FontStyles.Bold;
-        text.alignment = TextAlignmentOptions.Center;
-        text.color = new Color(0.85f, 0.75f, 0.6f);
-
-        return btn;
+        return (btn, btnBg, text);
     }
 
     void CreateContentAreas(Transform parent)
     {
-        GameObject contentArea = new GameObject("ContentArea");
-        contentArea.transform.SetParent(parent, false);
-
-        RectTransform contentRect = contentArea.AddComponent<RectTransform>();
+        GameObject contentArea = UIFactory.CreatePanel("ContentArea", parent);
+        RectTransform contentRect = contentArea.GetComponent<RectTransform>();
         contentRect.anchorMin = new Vector2(0, 0);
         contentRect.anchorMax = new Vector2(1, 1);
         contentRect.offsetMin = new Vector2(20, 80);
         contentRect.offsetMax = new Vector2(-20, -170);
 
-        Image contentBg = contentArea.AddComponent<Image>();
-        contentBg.color = new Color(0.08f, 0.05f, 0.07f, 0.9f);
+        contentBackground = contentArea.GetComponent<Image>();
+        contentBackground.color = Theme.backgroundDark;
 
         upgradesContent = CreateSimpleContent(contentArea.transform, "UpgradesContent");
         itemsContent = CreateSimpleContent(contentArea.transform, "ItemsContent");
@@ -260,17 +286,17 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     Transform CreateSimpleContent(Transform parent, string name)
     {
-        GameObject container = new GameObject(name);
-        container.transform.SetParent(parent, false);
-
-        RectTransform rect = container.AddComponent<RectTransform>();
+        GameObject container = UIFactory.CreatePanel(name, parent);
+        RectTransform rect = container.GetComponent<RectTransform>();
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
         rect.offsetMin = new Vector2(10, 10);
         rect.offsetMax = new Vector2(-10, -10);
 
+        container.GetComponent<Image>().color = Color.clear;
+
         VerticalLayoutGroup layout = container.AddComponent<VerticalLayoutGroup>();
-        layout.spacing = 10;
+        layout.spacing = Theme.spacingMedium;
         layout.padding = new RectOffset(0, 0, 0, 0);
         layout.childAlignment = TextAnchor.UpperCenter;
         layout.childControlWidth = true;
@@ -291,7 +317,7 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void CreateUpgradeCard(Transform parent, string statName, string description, string statId, int duskenCost, int shardCost)
     {
-        GameObject card = CreateItemCard(parent, statName, description, duskenCost, shardCost, () =>
+        CreateItemCard(parent, statName, description, duskenCost, shardCost, () =>
         {
             Debug.Log($"[ShopPanel] Upgrade {statId} clicked");
             OnItemPurchased?.Invoke($"upgrade_{statId}");
@@ -310,7 +336,7 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void CreateShopItem(Transform parent, string itemName, string description, int duskenCost, int shardCost, string itemId)
     {
-        GameObject card = CreateItemCard(parent, itemName, description, duskenCost, shardCost, () =>
+        CreateItemCard(parent, itemName, description, duskenCost, shardCost, () =>
         {
             Debug.Log($"[ShopPanel] Purchase {itemId} clicked");
             OnItemPurchased?.Invoke(itemId);
@@ -319,37 +345,30 @@ public class ShopPanel : MonoBehaviour, IThemeable
 
     void PopulateSubscriptionTab()
     {
-        GameObject subscriptionCard = new GameObject("SubscriptionCard");
-        subscriptionCard.transform.SetParent(subscriptionContent, false);
-
-        RectTransform cardRect = subscriptionCard.AddComponent<RectTransform>();
+        GameObject subscriptionCard = UIFactory.CreatePanel("SubscriptionCard", subscriptionContent);
+        RectTransform cardRect = subscriptionCard.GetComponent<RectTransform>();
         cardRect.sizeDelta = new Vector2(-20, 400);
 
         LayoutElement layoutElement = subscriptionCard.AddComponent<LayoutElement>();
         layoutElement.minHeight = 400;
         layoutElement.preferredHeight = 400;
 
-        Image cardBg = subscriptionCard.AddComponent<Image>();
-        cardBg.color = new Color(0.18f, 0.12f, 0.15f, 1f);
+        Image cardBg = subscriptionCard.GetComponent<Image>();
+        cardBg.color = Theme.backgroundLight;
+        itemCardBackgrounds.Add(cardBg);
 
-        AddGothicBorder(subscriptionCard.transform, new Color(0.9f, 0.7f, 0.2f, 0.8f));
+        UIFactory.AddBorder(subscriptionCard.transform, Theme.textGold, 3);
 
-        GameObject titleObj = new GameObject("Title");
-        titleObj.transform.SetParent(subscriptionCard.transform);
-
-        RectTransform titleRect = titleObj.AddComponent<RectTransform>();
-        titleRect.anchorMin = new Vector2(0, 1);
-        titleRect.anchorMax = new Vector2(1, 1);
-        titleRect.pivot = new Vector2(0.5f, 1);
-        titleRect.anchoredPosition = new Vector2(0, -20);
-        titleRect.sizeDelta = new Vector2(-40, 60);
-
-        TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-        titleText.text = "[ASHEN ONE]";
-        titleText.fontSize = 42;
-        titleText.fontStyle = FontStyles.Bold;
-        titleText.alignment = TextAlignmentOptions.Center;
-        titleText.color = new Color(1f, 0.85f, 0.4f);
+        TextMeshProUGUI subTitleText = UIFactory.CreateTitle("Title", subscriptionCard.transform, "[ASHEN ONE]").GetComponent<TextMeshProUGUI>();
+        RectTransform subTitleRect = subTitleText.GetComponent<RectTransform>();
+        subTitleRect.anchorMin = new Vector2(0, 1);
+        subTitleRect.anchorMax = new Vector2(1, 1);
+        subTitleRect.pivot = new Vector2(0.5f, 1);
+        subTitleRect.anchoredPosition = new Vector2(0, -20);
+        subTitleRect.sizeDelta = new Vector2(-40, 60);
+        subTitleText.fontSize = Theme.GetScaledFontSize(42);
+        subTitleText.alignment = TextAlignmentOptions.Center;
+        itemNameTexts.Add(subTitleText);
 
         string[] benefits = {
             "• 50 [BLOOD SHARDS] monthly",
@@ -364,234 +383,134 @@ public class ShopPanel : MonoBehaviour, IThemeable
         float yOffset = -100;
         foreach (string benefit in benefits)
         {
-            GameObject benefitObj = new GameObject("Benefit");
-            benefitObj.transform.SetParent(subscriptionCard.transform);
-
-            RectTransform benefitRect = benefitObj.AddComponent<RectTransform>();
+            TextMeshProUGUI benefitText = UIFactory.CreateText("Benefit", subscriptionCard.transform, benefit, Theme.fontSizeSmall).GetComponent<TextMeshProUGUI>();
+            RectTransform benefitRect = benefitText.GetComponent<RectTransform>();
             benefitRect.anchorMin = new Vector2(0, 1);
             benefitRect.anchorMax = new Vector2(1, 1);
             benefitRect.pivot = new Vector2(0.5f, 1);
             benefitRect.anchoredPosition = new Vector2(0, yOffset);
             benefitRect.sizeDelta = new Vector2(-60, 30);
-
-            TextMeshProUGUI benefitText = benefitObj.AddComponent<TextMeshProUGUI>();
-            benefitText.text = benefit;
-            benefitText.fontSize = 22;
             benefitText.alignment = TextAlignmentOptions.MidlineLeft;
-            benefitText.color = new Color(0.8f, 0.75f, 0.7f);
+            benefitText.color = Theme.textSecondary;
 
             yOffset -= 35;
         }
 
-        GameObject subscribeBtn = new GameObject("SubscribeButton");
-        subscribeBtn.transform.SetParent(subscriptionCard.transform);
+        GameObject subscribeBtn = UIFactory.CreateButton("SubscribeButton", subscriptionCard.transform, "SUBSCRIBE", () =>
+        {
+            Debug.Log("[ShopPanel] Subscribe clicked");
+            OnItemPurchased?.Invoke("subscription_ashen_one");
+        });
 
-        RectTransform btnRect = subscribeBtn.AddComponent<RectTransform>();
+        RectTransform btnRect = subscribeBtn.GetComponent<RectTransform>();
         btnRect.anchorMin = new Vector2(0.5f, 0);
         btnRect.anchorMax = new Vector2(0.5f, 0);
         btnRect.pivot = new Vector2(0.5f, 0);
         btnRect.anchoredPosition = new Vector2(0, 30);
         btnRect.sizeDelta = new Vector2(300, 60);
 
-        Image btnBg = subscribeBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.7f, 0.5f, 0.15f, 1f);
+        Image btnBg = subscribeBtn.GetComponent<Image>();
+        btnBg.color = Theme.accentBrown;
+        buyButtonImages.Add(btnBg);
 
-        Button btn = subscribeBtn.AddComponent<Button>();
-        btn.onClick.AddListener(() =>
-        {
-            Debug.Log("[ShopPanel] Subscribe clicked");
-            OnItemPurchased?.Invoke("subscription_ashen_one");
-        });
-
-        GameObject btnTextObj = new GameObject("Text");
-        btnTextObj.transform.SetParent(subscribeBtn.transform);
-
-        RectTransform btnTextRect = btnTextObj.AddComponent<RectTransform>();
-        btnTextRect.anchorMin = Vector2.zero;
-        btnTextRect.anchorMax = Vector2.one;
-        btnTextRect.offsetMin = Vector2.zero;
-        btnTextRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI btnText = btnTextObj.AddComponent<TextMeshProUGUI>();
-        btnText.text = "SUBSCRIBE";
-        btnText.fontSize = 28;
-        btnText.fontStyle = FontStyles.Bold;
-        btnText.alignment = TextAlignmentOptions.Center;
-        btnText.color = Color.white;
+        TextMeshProUGUI btnText = subscribeBtn.GetComponentInChildren<TextMeshProUGUI>();
+        btnText.fontSize = Theme.GetScaledFontSize(28);
+        btnText.color = Theme.textPrimary;
     }
 
-    GameObject CreateItemCard(Transform parent, string itemName, string description, int duskenCost, int shardCost, Action onPurchase)
+    void CreateItemCard(Transform parent, string itemName, string description, int duskenCost, int shardCost, Action onPurchase)
     {
-        GameObject card = new GameObject(itemName + "_Card");
-        card.transform.SetParent(parent, false);
-
-        RectTransform cardRect = card.AddComponent<RectTransform>();
+        GameObject card = UIFactory.CreatePanel(itemName + "_Card", parent);
+        RectTransform cardRect = card.GetComponent<RectTransform>();
         cardRect.sizeDelta = new Vector2(-20, 100);
 
         LayoutElement layoutElement = card.AddComponent<LayoutElement>();
         layoutElement.minHeight = 100;
         layoutElement.preferredHeight = 100;
 
-        Image cardBg = card.AddComponent<Image>();
-        cardBg.color = new Color(0.15f, 0.1f, 0.12f, 1f);
+        Image cardBg = card.GetComponent<Image>();
+        cardBg.color = Theme.backgroundLight;
+        itemCardBackgrounds.Add(cardBg);
 
-        AddGothicBorder(card.transform, new Color(0.5f, 0.35f, 0.2f, 0.7f));
+        UIFactory.AddBorder(card.transform, Theme.borderGold, 2);
 
-        GameObject nameObj = new GameObject("Name");
-        nameObj.transform.SetParent(card.transform);
-
-        RectTransform nameRect = nameObj.AddComponent<RectTransform>();
+        TextMeshProUGUI nameText = UIFactory.CreateText("Name", card.transform, itemName, Theme.fontSizeMedium).GetComponent<TextMeshProUGUI>();
+        RectTransform nameRect = nameText.GetComponent<RectTransform>();
         nameRect.anchorMin = new Vector2(0, 1);
         nameRect.anchorMax = new Vector2(0.6f, 1);
         nameRect.pivot = new Vector2(0, 1);
         nameRect.anchoredPosition = new Vector2(15, -15);
         nameRect.sizeDelta = new Vector2(0, 35);
-
-        TextMeshProUGUI nameText = nameObj.AddComponent<TextMeshProUGUI>();
-        nameText.text = itemName;
-        nameText.fontSize = 28;
         nameText.fontStyle = FontStyles.Bold;
         nameText.alignment = TextAlignmentOptions.MidlineLeft;
-        nameText.color = new Color(0.95f, 0.85f, 0.7f);
+        nameText.color = Theme.textGold;
+        itemNameTexts.Add(nameText);
 
-        GameObject descObj = new GameObject("Description");
-        descObj.transform.SetParent(card.transform);
-
-        RectTransform descRect = descObj.AddComponent<RectTransform>();
+        TextMeshProUGUI descText = UIFactory.CreateText("Description", card.transform, description, Theme.fontSizeSmall).GetComponent<TextMeshProUGUI>();
+        RectTransform descRect = descText.GetComponent<RectTransform>();
         descRect.anchorMin = new Vector2(0, 0);
         descRect.anchorMax = new Vector2(0.6f, 1);
         descRect.pivot = new Vector2(0, 1);
         descRect.anchoredPosition = new Vector2(15, -50);
         descRect.sizeDelta = new Vector2(0, 50);
-
-        TextMeshProUGUI descText = descObj.AddComponent<TextMeshProUGUI>();
-        descText.text = description;
-        descText.fontSize = 18;
         descText.alignment = TextAlignmentOptions.TopLeft;
-        descText.color = new Color(0.7f, 0.65f, 0.6f);
+        descText.color = Theme.textSecondary;
+        itemDescTexts.Add(descText);
 
-        GameObject priceObj = new GameObject("Price");
-        priceObj.transform.SetParent(card.transform);
-
-        RectTransform priceRect = priceObj.AddComponent<RectTransform>();
+        TextMeshProUGUI priceText = UIFactory.CreateText("Price", card.transform, "", Theme.fontSizeMedium).GetComponent<TextMeshProUGUI>();
+        RectTransform priceRect = priceText.GetComponent<RectTransform>();
         priceRect.anchorMin = new Vector2(0.6f, 0.5f);
         priceRect.anchorMax = new Vector2(0.85f, 0.5f);
         priceRect.pivot = new Vector2(0.5f, 0.5f);
         priceRect.anchoredPosition = Vector2.zero;
         priceRect.sizeDelta = new Vector2(0, 40);
+        priceText.fontStyle = FontStyles.Bold;
+        priceText.alignment = TextAlignmentOptions.Center;
 
-        TextMeshProUGUI priceText = priceObj.AddComponent<TextMeshProUGUI>();
         if (duskenCost > 0)
         {
             priceText.text = $"{duskenCost} DC";
-            priceText.color = new Color(1f, 0.85f, 0.4f);
+            priceText.color = Theme.textGold;
         }
         else if (shardCost > 0)
         {
             priceText.text = $"{shardCost} BS";
-            priceText.color = new Color(0.9f, 0.3f, 0.35f);
+            priceText.color = Theme.bloodRed;
         }
-        priceText.fontSize = 24;
-        priceText.fontStyle = FontStyles.Bold;
-        priceText.alignment = TextAlignmentOptions.Center;
+        priceTexts.Add(priceText);
 
-        GameObject buyBtn = new GameObject("BuyButton");
-        buyBtn.transform.SetParent(card.transform);
-
-        RectTransform btnRect = buyBtn.AddComponent<RectTransform>();
+        GameObject buyBtn = UIFactory.CreateButton("BuyButton", card.transform, "BUY", onPurchase);
+        RectTransform btnRect = buyBtn.GetComponent<RectTransform>();
         btnRect.anchorMin = new Vector2(0.85f, 0.2f);
         btnRect.anchorMax = new Vector2(0.98f, 0.8f);
         btnRect.offsetMin = Vector2.zero;
         btnRect.offsetMax = Vector2.zero;
 
-        Image btnBg = buyBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.5f, 0.35f, 0.15f, 1f);
+        Image btnBg = buyBtn.GetComponent<Image>();
+        btnBg.color = Theme.accentBrown;
+        buyButtonImages.Add(btnBg);
 
-        Button btn = buyBtn.AddComponent<Button>();
-        btn.onClick.AddListener(() => onPurchase?.Invoke());
-
-        ColorBlock colors = btn.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1.2f, 1.1f, 1f);
-        colors.pressedColor = new Color(0.8f, 0.7f, 0.6f);
-        btn.colors = colors;
-
-        GameObject btnTextObj = new GameObject("Text");
-        btnTextObj.transform.SetParent(buyBtn.transform);
-
-        RectTransform btnTextRect = btnTextObj.AddComponent<RectTransform>();
-        btnTextRect.anchorMin = Vector2.zero;
-        btnTextRect.anchorMax = Vector2.one;
-        btnTextRect.offsetMin = Vector2.zero;
-        btnTextRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI btnText = btnTextObj.AddComponent<TextMeshProUGUI>();
-        btnText.text = "BUY";
-        btnText.fontSize = 20;
-        btnText.fontStyle = FontStyles.Bold;
-        btnText.alignment = TextAlignmentOptions.Center;
-        btnText.color = Color.white;
-
-        return card;
+        TextMeshProUGUI btnText = buyBtn.GetComponentInChildren<TextMeshProUGUI>();
+        btnText.fontSize = Theme.GetScaledFontSize(20);
+        btnText.color = Theme.textPrimary;
     }
 
     void CreateCloseButton(Transform parent)
     {
-        GameObject closeBtn = new GameObject("CloseButton");
-        closeBtn.transform.SetParent(parent);
-
-        RectTransform btnRect = closeBtn.AddComponent<RectTransform>();
+        closeButton = UIFactory.CreateIconButton("CloseButton", parent, "X", Hide);
+        RectTransform btnRect = closeButton.GetComponent<RectTransform>();
         btnRect.anchorMin = new Vector2(1, 1);
         btnRect.anchorMax = new Vector2(1, 1);
         btnRect.pivot = new Vector2(1, 1);
         btnRect.anchoredPosition = new Vector2(-10, -10);
-        btnRect.sizeDelta = new Vector2(50, 50);
+        btnRect.sizeDelta = new Vector2(Theme.GetScaledSize(50), Theme.GetScaledSize(50));
 
-        Image btnBg = closeBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.6f, 0.2f, 0.2f, 0.9f);
+        closeButtonImage = closeButton.GetComponent<Image>();
+        closeButtonImage.color = Theme.dangerColor;
 
-        closeButton = closeBtn.AddComponent<Button>();
-        closeButton.onClick.AddListener(Hide);
-
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(closeBtn.transform);
-
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-        text.text = "X";
-        text.fontSize = 32;
-        text.fontStyle = FontStyles.Bold;
-        text.alignment = TextAlignmentOptions.Center;
-        text.color = Color.white;
-    }
-
-    void AddGothicBorder(Transform parent, Color borderColor)
-    {
-        string[] sides = { "Top", "Bottom", "Left", "Right" };
-        Vector2[] anchorsMin = { new Vector2(0, 1), new Vector2(0, 0), new Vector2(0, 0), new Vector2(1, 0) };
-        Vector2[] anchorsMax = { new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
-        Vector2[] sizes = { new Vector2(0, 3), new Vector2(0, 3), new Vector2(3, 0), new Vector2(3, 0) };
-
-        for (int i = 0; i < 4; i++)
-        {
-            GameObject border = new GameObject("Border_" + sides[i]);
-            border.transform.SetParent(parent);
-
-            RectTransform rect = border.AddComponent<RectTransform>();
-            rect.anchorMin = anchorsMin[i];
-            rect.anchorMax = anchorsMax[i];
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.sizeDelta = sizes[i];
-
-            Image img = border.AddComponent<Image>();
-            img.color = borderColor;
-        }
+        closeButtonText = closeButton.GetComponentInChildren<TextMeshProUGUI>();
+        closeButtonText.fontSize = Theme.GetScaledFontSize(32);
+        closeButtonText.color = Theme.textPrimary;
     }
 
     void SwitchTab(ShopTab tab)
@@ -599,32 +518,36 @@ public class ShopPanel : MonoBehaviour, IThemeable
         currentTab = tab;
 
         if (upgradesContent != null)
-        {
             upgradesContent.gameObject.SetActive(tab == ShopTab.Upgrades);
-        }
         if (itemsContent != null)
-        {
             itemsContent.gameObject.SetActive(tab == ShopTab.Items);
-        }
         if (subscriptionContent != null)
-        {
             subscriptionContent.gameObject.SetActive(tab == ShopTab.Subscription);
-        }
 
         UpdateTabButtonColors();
     }
 
     void UpdateTabButtonColors()
     {
-        Color activeColor = new Color(0.25f, 0.18f, 0.15f, 1f);
-        Color inactiveColor = new Color(0.15f, 0.1f, 0.12f, 0.9f);
+        Color activeColor = Theme != null ? Theme.backgroundPanel : new Color(0.25f, 0.18f, 0.15f, 1f);
+        Color inactiveColor = Theme != null ? Theme.backgroundLight : new Color(0.15f, 0.1f, 0.12f, 0.9f);
+        Color activeTextColor = Theme != null ? Theme.textGold : new Color(1f, 0.85f, 0.4f);
+        Color inactiveTextColor = Theme != null ? Theme.textSecondary : new Color(0.7f, 0.65f, 0.6f);
 
-        if (upgradesTabButton != null)
-            upgradesTabButton.GetComponent<Image>().color = currentTab == ShopTab.Upgrades ? activeColor : inactiveColor;
-        if (itemsTabButton != null)
-            itemsTabButton.GetComponent<Image>().color = currentTab == ShopTab.Items ? activeColor : inactiveColor;
-        if (subscriptionTabButton != null)
-            subscriptionTabButton.GetComponent<Image>().color = currentTab == ShopTab.Subscription ? activeColor : inactiveColor;
+        if (upgradesTabImage != null)
+            upgradesTabImage.color = currentTab == ShopTab.Upgrades ? activeColor : inactiveColor;
+        if (upgradesTabText != null)
+            upgradesTabText.color = currentTab == ShopTab.Upgrades ? activeTextColor : inactiveTextColor;
+
+        if (itemsTabImage != null)
+            itemsTabImage.color = currentTab == ShopTab.Items ? activeColor : inactiveColor;
+        if (itemsTabText != null)
+            itemsTabText.color = currentTab == ShopTab.Items ? activeTextColor : inactiveTextColor;
+
+        if (subscriptionTabImage != null)
+            subscriptionTabImage.color = currentTab == ShopTab.Subscription ? activeColor : inactiveColor;
+        if (subscriptionTabText != null)
+            subscriptionTabText.color = currentTab == ShopTab.Subscription ? activeTextColor : inactiveTextColor;
     }
 
     public void Show()
@@ -661,5 +584,9 @@ public class ShopPanel : MonoBehaviour, IThemeable
     }
 
     public bool IsOpen => isOpen;
-}
 
+    void OnDestroy()
+    {
+        UIThemeManager.Instance?.UnregisterElement(this);
+    }
+}

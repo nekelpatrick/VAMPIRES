@@ -60,8 +60,6 @@ public class GothicHUD : MonoBehaviour, IThemeable
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
-
-        UIThemeManager.Instance?.RegisterElement(this);
     }
 
     public void ApplyTheme(UITheme theme)
@@ -99,6 +97,8 @@ public class GothicHUD : MonoBehaviour, IThemeable
     void Start()
     {
         CreateHUD();
+
+        UIThemeManager.Instance?.RegisterElement(this);
 
         currencyManager = CurrencyManager.Instance;
         combatManager = CombatManager.Instance;
@@ -307,7 +307,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         if (damageBoostButton != null)
         {
             damageBoostButton.interactable = false;
-            damageBoostButton.GetComponent<Image>().color = new Color(0.2f, 0.6f, 0.2f, 0.9f);
+            damageBoostButton.GetComponent<Image>().color = Theme.successColor;
         }
     }
 
@@ -316,7 +316,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         if (damageBoostButton != null)
         {
             damageBoostButton.interactable = true;
-            damageBoostButton.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 0.9f);
+            damageBoostButton.GetComponent<Image>().color = Theme.dangerColor;
         }
         if (boostTimerText != null)
         {
@@ -398,11 +398,11 @@ public class GothicHUD : MonoBehaviour, IThemeable
         borderObj.transform.SetAsFirstSibling();
 
         Image borderImg = borderObj.AddComponent<Image>();
-        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.color = Theme.borderGold;
         borderImg.raycastTarget = false;
 
         Image btnBg = boostBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.5f, 0.15f, 0.15f, 0.95f);
+        btnBg.color = Theme.dangerColor;
         btnBg.raycastTarget = true;
 
         damageBoostButton = boostBtn.AddComponent<Button>();
@@ -424,7 +424,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         glowObj.transform.SetAsFirstSibling();
 
         damageBoostGlow = glowObj.AddComponent<Image>();
-        damageBoostGlow.color = new Color(1f, 0.3f, 0.3f, 0.5f);
+        damageBoostGlow.color = new Color(Theme.bloodRed.r, Theme.bloodRed.g, Theme.bloodRed.b, 0.5f);
         damageBoostGlow.raycastTarget = false;
 
         GameObject iconObj = new GameObject("Icon");
@@ -461,7 +461,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         shadowText.fontSize = fontSize;
         shadowText.fontStyle = FontStyles.Bold;
         shadowText.alignment = TextAlignmentOptions.Center;
-        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.color = Theme.shadowColor;
         shadowText.enableAutoSizing = true;
         shadowText.fontSizeMin = 24;
         shadowText.fontSizeMax = fontSize;
@@ -478,10 +478,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
 
         boostTimerText = labelObj.AddComponent<TextMeshProUGUI>();
         boostTimerText.text = "BOOST";
-        boostTimerText.fontSize = 18;
+        boostTimerText.fontSize = Theme.GetScaledFontSize(18);
         boostTimerText.fontStyle = FontStyles.Bold;
         boostTimerText.alignment = TextAlignmentOptions.Center;
-        boostTimerText.color = new Color(1f, 0.85f, 0.3f);
+        boostTimerText.color = Theme.textGold;
         boostTimerText.raycastTarget = false;
     }
 
@@ -510,11 +510,11 @@ public class GothicHUD : MonoBehaviour, IThemeable
         borderObj.transform.SetAsFirstSibling();
 
         Image borderImg = borderObj.AddComponent<Image>();
-        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.color = Theme.borderGold;
         borderImg.raycastTarget = false;
 
         Image btnBg = questBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.2f, 0.4f, 0.15f, 0.95f);
+        btnBg.color = Theme.successColor;
         btnBg.raycastTarget = true;
 
         questButton = questBtn.AddComponent<Button>();
@@ -549,7 +549,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         shadowText.fontSize = fontSize;
         shadowText.fontStyle = FontStyles.Bold;
         shadowText.alignment = TextAlignmentOptions.Center;
-        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.color = Theme.shadowColor;
         shadowText.enableAutoSizing = true;
         shadowText.fontSizeMin = 28;
         shadowText.fontSizeMax = fontSize;
@@ -560,7 +560,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         iconText.fontSize = fontSize;
         iconText.fontStyle = FontStyles.Bold;
         iconText.alignment = TextAlignmentOptions.Center;
-        iconText.color = Color.white;
+        iconText.color = Theme.textPrimary;
         iconText.enableAutoSizing = true;
         iconText.fontSizeMin = 28;
         iconText.fontSizeMax = fontSize;
@@ -577,7 +577,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         badgeRect.sizeDelta = new Vector2(36, 36);
 
         Image badgeBg = badgeObj.AddComponent<Image>();
-        badgeBg.color = new Color(0.9f, 0.2f, 0.2f);
+        badgeBg.color = Theme.bloodRed;
         badgeBg.raycastTarget = false;
 
         GameObject badgeText = new GameObject("Text");
@@ -625,11 +625,11 @@ public class GothicHUD : MonoBehaviour, IThemeable
         borderObj.transform.SetAsFirstSibling();
 
         Image borderImg = borderObj.AddComponent<Image>();
-        borderImg.color = new Color(0.85f, 0.65f, 0.2f, 1f);
+        borderImg.color = Theme.borderGold;
         borderImg.raycastTarget = false;
 
         Image btnBg = shopBtn.AddComponent<Image>();
-        btnBg.color = new Color(0.5f, 0.35f, 0.15f, 0.95f);
+        btnBg.color = Theme.accentBrown;
         btnBg.raycastTarget = true;
 
         shopButton = shopBtn.AddComponent<Button>();
@@ -663,7 +663,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         shadowText.fontSize = fontSize;
         shadowText.fontStyle = FontStyles.Bold;
         shadowText.alignment = TextAlignmentOptions.Center;
-        shadowText.color = new Color(0, 0, 0, 0.6f);
+        shadowText.color = Theme.shadowColor;
         shadowText.enableAutoSizing = true;
         shadowText.fontSizeMin = 28;
         shadowText.fontSizeMax = fontSize;
@@ -674,7 +674,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         iconText.fontSize = fontSize;
         iconText.fontStyle = FontStyles.Bold;
         iconText.alignment = TextAlignmentOptions.Center;
-        iconText.color = new Color(1f, 0.85f, 0.4f);
+        iconText.color = Theme.textGold;
         iconText.enableAutoSizing = true;
         iconText.fontSizeMin = 28;
         iconText.fontSizeMax = fontSize;
@@ -691,10 +691,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
 
         TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
         labelText.text = "SHOP";
-        labelText.fontSize = 18;
+        labelText.fontSize = Theme.GetScaledFontSize(18);
         labelText.fontStyle = FontStyles.Bold;
         labelText.alignment = TextAlignmentOptions.Center;
-        labelText.color = new Color(1f, 0.85f, 0.3f);
+        labelText.color = Theme.textGold;
         labelText.raycastTarget = false;
     }
 
@@ -760,10 +760,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
             new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1),
             new Vector2(0, -10), new Vector2(-40, 70));
 
-        AddGothicBorder(topBar.transform, new Color(0.6f, 0.4f, 0.2f, 0.8f));
+        AddGothicBorder(topBar.transform, Theme.borderGold);
 
         Image bg = topBar.GetComponent<Image>();
-        bg.color = new Color(0.05f, 0.03f, 0.05f, 0.95f);
+        bg.color = Theme.backgroundDark;
 
         HorizontalLayoutGroup layout = topBar.AddComponent<HorizontalLayoutGroup>();
         layout.spacing = 50;
@@ -772,8 +772,8 @@ public class GothicHUD : MonoBehaviour, IThemeable
         layout.childControlWidth = false;
         layout.childControlHeight = true;
 
-        waveText = CreateGothicText(topBar.transform, "WaveText", "WAVE I", 36,
-            new Color(0.9f, 0.8f, 0.6f), FontStyles.Bold, 200);
+        waveText = CreateGothicText(topBar.transform, "WaveText", "WAVE I", Theme.GetScaledFontSize(36),
+            Theme.textGold, FontStyles.Bold, 200);
 
         CreateCurrencyDisplay(topBar.transform, "DuskenDisplay", "[DUSKEN COIN]",
             new Color(1f, 0.85f, 0.4f), out duskenText);
@@ -806,9 +806,9 @@ public class GothicHUD : MonoBehaviour, IThemeable
         bgRect.offsetMax = Vector2.zero;
 
         Image bgImage = bgObj.AddComponent<Image>();
-        bgImage.color = new Color(0.04f, 0.02f, 0.05f, 0.9f);
+        bgImage.color = Theme.backgroundDark;
 
-        AddGothicBorder(powerContainer.transform, new Color(0.7f, 0.5f, 0.2f, 0.7f));
+        AddGothicBorder(powerContainer.transform, Theme.borderGold);
 
         GameObject textObj = new GameObject("PowerText");
         textObj.transform.SetParent(powerContainer.transform);
@@ -821,10 +821,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
 
         powerScoreText = textObj.AddComponent<TextMeshProUGUI>();
         powerScoreText.text = "POWER: 0";
-        powerScoreText.fontSize = 28;
+        powerScoreText.fontSize = Theme.GetScaledFontSize(28);
         powerScoreText.fontStyle = FontStyles.Bold;
         powerScoreText.alignment = TextAlignmentOptions.MidlineLeft;
-        powerScoreText.color = new Color(1f, 0.85f, 0.3f);
+        powerScoreText.color = Theme.textGold;
     }
 
     void CreateXPBar(Transform parent)
@@ -849,9 +849,9 @@ public class GothicHUD : MonoBehaviour, IThemeable
         bgRect.offsetMax = Vector2.zero;
 
         Image bgImage = bgObj.AddComponent<Image>();
-        bgImage.color = new Color(0.08f, 0.04f, 0.06f, 0.95f);
+        bgImage.color = Theme.backgroundPanel;
 
-        AddGothicBorder(xpContainer.transform, new Color(0.5f, 0.35f, 0.2f, 0.6f));
+        AddGothicBorder(xpContainer.transform, Theme.accentBrown);
 
         GameObject levelBadge = new GameObject("LevelBadge");
         levelBadge.transform.SetParent(xpContainer.transform);
@@ -864,10 +864,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
         levelRect.sizeDelta = new Vector2(60, 30);
 
         Image levelBg = levelBadge.AddComponent<Image>();
-        levelBg.color = new Color(0.5f, 0.25f, 0.15f, 1f);
+        levelBg.color = Theme.accentBrown;
 
-        levelText = CreateGothicText(levelBadge.transform, "LevelText", "Lv. 1", 18,
-            new Color(1f, 0.9f, 0.7f), FontStyles.Bold, 60);
+        levelText = CreateGothicText(levelBadge.transform, "LevelText", "Lv. 1", Theme.GetScaledFontSize(18),
+            Theme.textGold, FontStyles.Bold, 60);
         RectTransform levelTextRect = levelText.GetComponent<RectTransform>();
         levelTextRect.anchorMin = Vector2.zero;
         levelTextRect.anchorMax = Vector2.one;
@@ -885,7 +885,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         barRect.sizeDelta = new Vector2(-90, 18);
 
         Image barBg = barContainer.AddComponent<Image>();
-        barBg.color = new Color(0.15f, 0.08f, 0.1f, 1f);
+        barBg.color = Theme.backgroundLight;
 
         GameObject fillObj = new GameObject("Fill");
         fillObj.transform.SetParent(barContainer.transform);
@@ -898,7 +898,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         fillRect.offsetMax = new Vector2(-2, -2);
 
         xpBarFill = fillObj.AddComponent<Image>();
-        xpBarFill.color = new Color(0.4f, 0.8f, 0.3f);
+        xpBarFill.color = Theme.fillXP;
         xpBarFill.type = Image.Type.Filled;
         xpBarFill.fillMethod = Image.FillMethod.Horizontal;
         xpBarFill.fillAmount = 0f;
@@ -914,10 +914,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
 
         xpText = xpTextObj.AddComponent<TextMeshProUGUI>();
         xpText.text = "0 / 100";
-        xpText.fontSize = 14;
+        xpText.fontSize = Theme.GetScaledFontSize(14);
         xpText.fontStyle = FontStyles.Bold;
         xpText.alignment = TextAlignmentOptions.Center;
-        xpText.color = Color.white;
+        xpText.color = Theme.textPrimary;
     }
 
     void CreateCurrencyDisplay(Transform parent, string name, string label, Color color, out TextMeshProUGUI valueText)
@@ -957,8 +957,8 @@ public class GothicHUD : MonoBehaviour, IThemeable
         RectTransform rect = container.AddComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 40);
 
-        CreateGothicText(container.transform, "Label", "THRALL", 14,
-            new Color(0.5f, 0.7f, 0.5f), FontStyles.Normal, 60);
+        CreateGothicText(container.transform, "Label", "THRALL", Theme.GetScaledFontSize(14),
+            Theme.textSuccess, FontStyles.Normal, 60);
 
         GameObject barBg = new GameObject("HealthBarBg");
         barBg.transform.SetParent(container.transform);
@@ -967,7 +967,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         bgRect.sizeDelta = new Vector2(200, 20);
 
         Image bgImg = barBg.AddComponent<Image>();
-        bgImg.color = new Color(0.15f, 0.1f, 0.1f, 0.9f);
+        bgImg.color = Theme.backgroundLight;
 
         GameObject barFill = new GameObject("HealthBarFill");
         barFill.transform.SetParent(barBg.transform);
@@ -979,7 +979,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         fillRect.pivot = new Vector2(0, 0.5f);
 
         Image fillImg = barFill.AddComponent<Image>();
-        fillImg.color = new Color(0.7f, 0.2f, 0.2f);
+        fillImg.color = Theme.fillHealth;
         fillImg.type = Image.Type.Filled;
         fillImg.fillMethod = Image.FillMethod.Horizontal;
 
@@ -992,10 +992,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
             new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5f, 0),
             new Vector2(0, 10), new Vector2(-40, 60));
 
-        AddGothicBorder(bottomBar.transform, new Color(0.6f, 0.4f, 0.2f, 0.8f));
+        AddGothicBorder(bottomBar.transform, Theme.borderGold);
 
         Image bg = bottomBar.GetComponent<Image>();
-        bg.color = new Color(0.05f, 0.03f, 0.05f, 0.9f);
+        bg.color = Theme.backgroundDark;
 
         GameObject progressContainer = new GameObject("WaveProgress");
         progressContainer.transform.SetParent(bottomBar.transform);
@@ -1006,7 +1006,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         progRect.offsetMax = Vector2.zero;
 
         Image progBg = progressContainer.AddComponent<Image>();
-        progBg.color = new Color(0.1f, 0.08f, 0.08f, 0.9f);
+        progBg.color = Theme.backgroundLight;
 
         GameObject fillObj = new GameObject("ProgressFill");
         fillObj.transform.SetParent(progressContainer.transform);
@@ -1019,7 +1019,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         fillRect.sizeDelta = new Vector2(0, 0);
 
         waveProgressFill = fillObj.AddComponent<Image>();
-        waveProgressFill.color = new Color(0.8f, 0.6f, 0.2f);
+        waveProgressFill.color = Theme.fillProgress;
     }
 
     void CreateKillCounter(Transform parent)
@@ -1029,15 +1029,15 @@ public class GothicHUD : MonoBehaviour, IThemeable
             new Vector2(-20, -100), new Vector2(180, 80));
 
         Image bg = killContainer.GetComponent<Image>();
-        bg.color = new Color(0.05f, 0.02f, 0.02f, 0.85f);
+        bg.color = Theme.backgroundDark;
 
-        AddGothicBorder(killContainer.transform, new Color(0.5f, 0.2f, 0.2f, 0.7f));
+        AddGothicBorder(killContainer.transform, Theme.borderBlood);
 
-        CreateGothicText(killContainer.transform, "KillLabel", "KILLS", 14,
-            new Color(0.7f, 0.5f, 0.5f), FontStyles.Normal, 180).alignment = TextAlignmentOptions.Center;
+        CreateGothicText(killContainer.transform, "KillLabel", "KILLS", Theme.GetScaledFontSize(14),
+            Theme.textSecondary, FontStyles.Normal, 180).alignment = TextAlignmentOptions.Center;
 
-        killCountText = CreateGothicText(killContainer.transform, "KillCount", "0", 42,
-            new Color(0.9f, 0.3f, 0.3f), FontStyles.Bold, 180);
+        killCountText = CreateGothicText(killContainer.transform, "KillCount", "0", Theme.GetScaledFontSize(42),
+            Theme.textBlood, FontStyles.Bold, 180);
         killCountText.alignment = TextAlignmentOptions.Center;
         killCountText.rectTransform.anchoredPosition = new Vector2(0, -10);
     }
@@ -1049,10 +1049,10 @@ public class GothicHUD : MonoBehaviour, IThemeable
             new Vector2(0, 90), new Vector2(300, 50));
 
         Image bg = comboContainer.GetComponent<Image>();
-        bg.color = new Color(0, 0, 0, 0);
+        bg.color = Color.clear;
 
-        comboText = CreateGothicText(comboContainer.transform, "ComboText", "", 28,
-            new Color(1f, 0.8f, 0.3f), FontStyles.Bold, 300);
+        comboText = CreateGothicText(comboContainer.transform, "ComboText", "", Theme.GetScaledFontSize(28),
+            Theme.textGold, FontStyles.Bold, 300);
         comboText.alignment = TextAlignmentOptions.Center;
 
         GameObject fillBg = new GameObject("ComboFillBg");
@@ -1064,7 +1064,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         fillBgRect.offsetMax = Vector2.zero;
 
         Image fillBgImg = fillBg.AddComponent<Image>();
-        fillBgImg.color = new Color(0.2f, 0.15f, 0.1f, 0.8f);
+        fillBgImg.color = Theme.backgroundLight;
 
         GameObject fillObj = new GameObject("ComboFill");
         fillObj.transform.SetParent(fillBg.transform);
@@ -1076,7 +1076,7 @@ public class GothicHUD : MonoBehaviour, IThemeable
         fillRect.pivot = new Vector2(0, 0.5f);
 
         comboFill = fillObj.AddComponent<Image>();
-        comboFill.color = new Color(1f, 0.6f, 0.2f, 0.9f);
+        comboFill.color = Theme.fillCombo;
         comboFill.type = Image.Type.Filled;
         comboFill.fillMethod = Image.FillMethod.Horizontal;
     }
@@ -1209,15 +1209,15 @@ public class GothicHUD : MonoBehaviour, IThemeable
 
         if (ratio < 0.3f)
         {
-            thrallHealthFill.color = new Color(0.9f, 0.2f, 0.2f);
+            thrallHealthFill.color = Theme.healthLow;
         }
         else if (ratio < 0.6f)
         {
-            thrallHealthFill.color = new Color(0.9f, 0.6f, 0.2f);
+            thrallHealthFill.color = Theme.healthMedium;
         }
         else
         {
-            thrallHealthFill.color = new Color(0.3f, 0.8f, 0.3f);
+            thrallHealthFill.color = Theme.healthHigh;
         }
     }
 

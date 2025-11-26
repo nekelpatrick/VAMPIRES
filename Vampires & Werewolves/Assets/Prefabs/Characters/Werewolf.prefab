@@ -42,10 +42,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000000000000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00000000000000000000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: f354a82c5ecb941709c84442f2095fcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  thrallData: {fileID: 0}
+  thrallData: {fileID: 11400000, guid: ef61a6ddc7e05433e8af1fa75d87599b, type: 2}
 --- !u!1 &1000000000000001
 GameObject:
   m_ObjectHideFlags: 0

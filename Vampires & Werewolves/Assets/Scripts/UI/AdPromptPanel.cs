@@ -10,14 +10,18 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
     private UITheme Theme => UIThemeManager.Theme;
 
     [Header("Panel Elements")]
+    private Canvas panelCanvas;
     private GameObject canvasRoot;
     private GameObject panelRoot;
+    private Image panelBackground;
+    private Image dimmerImage;
     private TextMeshProUGUI titleText;
     private TextMeshProUGUI descriptionText;
     private TextMeshProUGUI rewardText;
     private Button watchButton;
+    private Image watchButtonImage;
     private Button skipButton;
-    private Image iconImage;
+    private Image skipButtonImage;
     private Image glowEffect;
 
     private Action onWatchClicked;
@@ -36,17 +40,29 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
             Destroy(gameObject);
             return;
         }
-
-        UIThemeManager.Instance?.RegisterElement(this);
     }
 
     public void ApplyTheme(UITheme theme)
     {
+        if (theme == null) return;
+
+        if (dimmerImage != null)
+            dimmerImage.color = theme.backgroundOverlay;
+
+        if (panelBackground != null)
+            panelBackground.color = theme.backgroundPanel;
+
+        if (descriptionText != null)
+            descriptionText.color = theme.textSecondary;
+
+        if (skipButtonImage != null)
+            skipButtonImage.color = theme.buttonNormal;
     }
 
     void Start()
     {
         CreatePanel();
+        UIThemeManager.Instance?.RegisterElement(this);
         HidePanel();
 
         AdRewardManager adManager = AdRewardManager.Instance;
@@ -59,170 +75,97 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
     void CreatePanel()
     {
         bool isMobile = MobileUIScaler.Instance != null && MobileUIScaler.Instance.IsMobile;
-        float scaleFactor = MobileUIScaler.Instance != null ? MobileUIScaler.Instance.ScaleFactor : 1f;
 
         canvasRoot = new GameObject("AdPromptCanvas");
         canvasRoot.transform.SetParent(transform);
-        GameObject canvasObj = canvasRoot;
 
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 500;
+        panelCanvas = UIFactory.CreateCanvas(canvasRoot.transform, "Canvas", 500);
 
-        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = isMobile ? 0.5f : 1f;
-
-        canvasObj.AddComponent<GraphicRaycaster>();
-
-        if (MobileUIScaler.Instance != null)
-        {
-            MobileUIScaler.Instance.ApplyToCanvas(canvas);
-        }
-
-        GameObject dimmer = CreateImage(canvasObj.transform, "Dimmer", new Color(0, 0, 0, 0.85f));
-        RectTransform dimRect = dimmer.GetComponent<RectTransform>();
+        GameObject dimmer = new GameObject("Dimmer");
+        dimmer.transform.SetParent(canvasRoot.transform);
+        RectTransform dimRect = dimmer.AddComponent<RectTransform>();
         dimRect.anchorMin = Vector2.zero;
         dimRect.anchorMax = Vector2.one;
         dimRect.offsetMin = Vector2.zero;
         dimRect.offsetMax = Vector2.zero;
+        dimmerImage = dimmer.AddComponent<Image>();
+        dimmerImage.color = Theme.backgroundOverlay;
 
         float panelWidth = isMobile ? 800 : 700;
         float panelHeight = isMobile ? 550 : 500;
 
-        panelRoot = new GameObject("PanelRoot");
-        panelRoot.transform.SetParent(canvasObj.transform);
-        RectTransform panelRect = panelRoot.AddComponent<RectTransform>();
+        panelRoot = UIFactory.CreatePanel(canvasRoot.transform, "PanelRoot", panelWidth, panelHeight);
+        RectTransform panelRect = panelRoot.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
         panelRect.anchoredPosition = Vector2.zero;
 
-        GameObject panelBg = CreateImage(panelRoot.transform, "Background", new Color(0.08f, 0.05f, 0.1f, 0.98f));
-        RectTransform bgRect = panelBg.GetComponent<RectTransform>();
-        bgRect.anchorMin = Vector2.zero;
-        bgRect.anchorMax = Vector2.one;
-        bgRect.offsetMin = Vector2.zero;
-        bgRect.offsetMax = Vector2.zero;
+        panelBackground = panelRoot.GetComponent<Image>();
+        panelBackground.color = Theme.backgroundPanel;
 
-        GameObject border = CreateImage(panelRoot.transform, "Border", new Color(0.6f, 0.4f, 0.2f, 0.9f));
-        RectTransform borderRect = border.GetComponent<RectTransform>();
-        borderRect.anchorMin = Vector2.zero;
-        borderRect.anchorMax = Vector2.one;
-        borderRect.offsetMin = new Vector2(-4, -4);
-        borderRect.offsetMax = new Vector2(4, 4);
-        border.transform.SetAsFirstSibling();
+        UIFactory.AddBorder(panelRoot.transform, Theme.borderGold);
 
-        GameObject glowObj = CreateImage(panelRoot.transform, "Glow", new Color(1f, 0.8f, 0.3f, 0.15f));
-        glowEffect = glowObj.GetComponent<Image>();
-        RectTransform glowRect = glowObj.GetComponent<RectTransform>();
+        GameObject glowObj = new GameObject("Glow");
+        glowObj.transform.SetParent(panelRoot.transform);
+        glowObj.transform.SetAsFirstSibling();
+        RectTransform glowRect = glowObj.AddComponent<RectTransform>();
         glowRect.anchorMin = new Vector2(0.5f, 0.5f);
         glowRect.anchorMax = new Vector2(0.5f, 0.5f);
-        glowRect.sizeDelta = new Vector2(800, 600);
-        glowObj.transform.SetAsFirstSibling();
+        glowRect.sizeDelta = new Vector2(panelWidth + 100, panelHeight + 100);
+        glowEffect = glowObj.AddComponent<Image>();
+        glowEffect.color = new Color(Theme.textGold.r, Theme.textGold.g, Theme.textGold.b, 0.15f);
 
-        titleText = CreateText(panelRoot.transform, "Title", "DOUBLE YOUR LOOT!", 48,
-            new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -40), new Vector2(600, 70));
-        titleText.color = new Color(1f, 0.85f, 0.3f);
-        titleText.fontStyle = FontStyles.Bold;
+        titleText = UIFactory.CreateText(panelRoot.transform, "Title", "DOUBLE YOUR LOOT!",
+            Theme.GetScaledFontSize(Theme.fontSizeXXL), Theme.textGold, FontStyles.Bold);
+        RectTransform titleRect = titleText.GetComponent<RectTransform>();
+        titleRect.anchorMin = new Vector2(0.5f, 1);
+        titleRect.anchorMax = new Vector2(0.5f, 1);
+        titleRect.anchoredPosition = new Vector2(0, -Theme.spacingXL);
+        titleRect.sizeDelta = new Vector2(600, 70);
+        titleText.alignment = TextAlignmentOptions.Center;
 
-        descriptionText = CreateText(panelRoot.transform, "Description", "Watch a short video to claim your reward!", 24,
-            new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -120), new Vector2(550, 60));
-        descriptionText.color = new Color(0.8f, 0.8f, 0.8f);
+        descriptionText = UIFactory.CreateText(panelRoot.transform, "Description", "Watch a short video to claim your reward!",
+            Theme.GetScaledFontSize(Theme.fontSizeMD), Theme.textSecondary, FontStyles.Normal);
+        RectTransform descRect = descriptionText.GetComponent<RectTransform>();
+        descRect.anchorMin = new Vector2(0.5f, 1);
+        descRect.anchorMax = new Vector2(0.5f, 1);
+        descRect.anchoredPosition = new Vector2(0, -120);
+        descRect.sizeDelta = new Vector2(550, 60);
+        descriptionText.alignment = TextAlignmentOptions.Center;
 
-        rewardText = CreateText(panelRoot.transform, "Reward", "+500 DUSKEN COIN", 36,
-            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 30), new Vector2(500, 60));
-        rewardText.color = new Color(0.3f, 1f, 0.4f);
-        rewardText.fontStyle = FontStyles.Bold;
+        rewardText = UIFactory.CreateText(panelRoot.transform, "Reward", "+500 DUSKEN COIN",
+            Theme.GetScaledFontSize(Theme.fontSizeLG), Theme.textSuccess, FontStyles.Bold);
+        RectTransform rewardRect = rewardText.GetComponent<RectTransform>();
+        rewardRect.anchorMin = new Vector2(0.5f, 0.5f);
+        rewardRect.anchorMax = new Vector2(0.5f, 0.5f);
+        rewardRect.anchoredPosition = new Vector2(0, Theme.spacingLG);
+        rewardRect.sizeDelta = new Vector2(500, 60);
+        rewardText.alignment = TextAlignmentOptions.Center;
 
         float watchBtnWidth = isMobile ? 380 : 300;
         float watchBtnHeight = isMobile ? 90 : 70;
         float skipBtnWidth = isMobile ? 260 : 200;
         float skipBtnHeight = isMobile ? 65 : 50;
 
-        watchButton = CreateButton(panelRoot.transform, "WatchButton", "WATCH AD",
-            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 150), new Vector2(watchBtnWidth, watchBtnHeight),
-            new Color(0.2f, 0.7f, 0.3f));
+        watchButton = UIFactory.CreateButton(panelRoot.transform, "WatchButton", "WATCH AD",
+            watchBtnWidth, watchBtnHeight, null);
+        watchButtonImage = watchButton.GetComponent<Image>();
+        watchButtonImage.color = Theme.statusActive;
+        RectTransform watchRect = watchButton.GetComponent<RectTransform>();
+        watchRect.anchorMin = new Vector2(0.5f, 0);
+        watchRect.anchorMax = new Vector2(0.5f, 0);
+        watchRect.anchoredPosition = new Vector2(0, 150);
         watchButton.onClick.AddListener(OnWatchButtonClicked);
 
-        skipButton = CreateButton(panelRoot.transform, "SkipButton", "NO THANKS",
-            new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(skipBtnWidth, skipBtnHeight),
-            new Color(0.3f, 0.25f, 0.3f));
+        skipButton = UIFactory.CreateButton(panelRoot.transform, "SkipButton", "NO THANKS",
+            skipBtnWidth, skipBtnHeight, null);
+        skipButtonImage = skipButton.GetComponent<Image>();
+        skipButtonImage.color = Theme.buttonNormal;
+        RectTransform skipRect = skipButton.GetComponent<RectTransform>();
+        skipRect.anchorMin = new Vector2(0.5f, 0);
+        skipRect.anchorMax = new Vector2(0.5f, 0);
+        skipRect.anchoredPosition = new Vector2(0, Theme.spacingXL);
         skipButton.onClick.AddListener(OnSkipButtonClicked);
-    }
-
-    GameObject CreateImage(Transform parent, string name, Color color)
-    {
-        GameObject obj = new GameObject(name);
-        obj.transform.SetParent(parent);
-
-        RectTransform rect = obj.AddComponent<RectTransform>();
-        Image img = obj.AddComponent<Image>();
-        img.color = color;
-
-        return obj;
-    }
-
-    TextMeshProUGUI CreateText(Transform parent, string name, string content, int fontSize,
-        Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size)
-    {
-        GameObject obj = new GameObject(name);
-        obj.transform.SetParent(parent);
-
-        RectTransform rect = obj.AddComponent<RectTransform>();
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.anchoredPosition = position;
-        rect.sizeDelta = size;
-
-        TextMeshProUGUI text = obj.AddComponent<TextMeshProUGUI>();
-        text.text = content;
-        text.fontSize = fontSize;
-        text.alignment = TextAlignmentOptions.Center;
-
-        return text;
-    }
-
-    Button CreateButton(Transform parent, string name, string label,
-        Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size, Color bgColor)
-    {
-        GameObject obj = new GameObject(name);
-        obj.transform.SetParent(parent);
-
-        RectTransform rect = obj.AddComponent<RectTransform>();
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.anchoredPosition = position;
-        rect.sizeDelta = size;
-
-        Image img = obj.AddComponent<Image>();
-        img.color = bgColor;
-
-        Button btn = obj.AddComponent<Button>();
-        ColorBlock colors = btn.colors;
-        colors.highlightedColor = bgColor * 1.2f;
-        colors.pressedColor = bgColor * 0.8f;
-        btn.colors = colors;
-
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(obj.transform);
-
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-        text.text = label;
-        text.fontSize = 24;
-        text.alignment = TextAlignmentOptions.Center;
-        text.color = Color.white;
-        text.fontStyle = FontStyles.Bold;
-
-        return btn;
     }
 
     void OnAdOffered(AdType type)
@@ -239,7 +182,8 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
 
         if (canvasRoot != null)
             canvasRoot.SetActive(true);
-        panelRoot.SetActive(true);
+        if (panelRoot != null)
+            panelRoot.SetActive(true);
         Time.timeScale = 0f;
     }
 
@@ -251,21 +195,27 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
                 titleText.text = "DOUBLE YOUR LOOT!";
                 descriptionText.text = "Watch a short video to double your wave rewards!";
                 rewardText.text = "2x DUSKEN COIN";
-                titleText.color = new Color(1f, 0.85f, 0.3f);
+                titleText.color = Theme.textGold;
+                rewardText.color = Theme.textGold;
+                watchButtonImage.color = Theme.statusActive;
                 break;
 
             case AdType.InstantRevive:
                 titleText.text = "REVIVE YOUR THRALL!";
                 descriptionText.text = "Your werewolf has fallen. Watch a video to revive instantly!";
                 rewardText.text = "INSTANT REVIVE";
-                titleText.color = new Color(0.3f, 1f, 0.4f);
+                titleText.color = Theme.textSuccess;
+                rewardText.color = Theme.textSuccess;
+                watchButtonImage.color = Theme.statusActive;
                 break;
 
             case AdType.DamageBoost:
                 titleText.text = "UNLEASH THE BEAST!";
                 descriptionText.text = "Watch a video to boost your damage for 60 seconds!";
                 rewardText.text = "2x DAMAGE (60s)";
-                titleText.color = new Color(1f, 0.3f, 0.3f);
+                titleText.color = Theme.textBlood;
+                rewardText.color = Theme.textBlood;
+                watchButtonImage.color = Theme.borderBlood;
                 break;
 
             case AdType.DoubleOffline:
@@ -273,7 +223,9 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
                 int earnings = AdRewardManager.Instance?.PendingOfflineEarnings ?? 0;
                 descriptionText.text = $"You earned {earnings} Dusken Coin while away!";
                 rewardText.text = $"+{earnings} BONUS";
-                titleText.color = new Color(0.5f, 0.7f, 1f);
+                titleText.color = Theme.fillProgress;
+                rewardText.color = Theme.textGold;
+                watchButtonImage.color = Theme.statusActive;
                 break;
         }
     }
@@ -328,7 +280,7 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
     {
         if (glowEffect != null && isShowing)
         {
-            float pulse = 0.1f + Mathf.Sin(Time.unscaledTime * 3f) * 0.05f;
+            float pulse = Theme.pulseIntensity + Mathf.Sin(Time.unscaledTime * Theme.pulseSpeed * 0.15f) * 0.05f;
             Color c = glowEffect.color;
             c.a = pulse;
             glowEffect.color = c;
@@ -348,4 +300,3 @@ public class AdPromptPanel : MonoBehaviour, IThemeable
         Time.timeScale = 1f;
     }
 }
-

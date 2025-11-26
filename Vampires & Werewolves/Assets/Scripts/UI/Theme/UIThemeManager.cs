@@ -96,6 +96,7 @@ public class UIThemeManager : MonoBehaviour
         theme.backgroundSecondary = new Color(0.08f, 0.04f, 0.06f, 0.95f);
         theme.backgroundPanel = new Color(0.05f, 0.03f, 0.05f, 0.95f);
         theme.backgroundDark = new Color(0.02f, 0.01f, 0.03f, 1f);
+        theme.backgroundLight = new Color(0.15f, 0.1f, 0.12f, 0.9f);
         theme.backgroundOverlay = new Color(0f, 0f, 0f, 0.7f);
 
         theme.borderGold = new Color(0.7f, 0.5f, 0.2f, 0.8f);
@@ -127,6 +128,16 @@ public class UIThemeManager : MonoBehaviour
         theme.statusDead = new Color(0.4f, 0.1f, 0.1f, 1f);
         theme.statusActive = new Color(0.2f, 0.5f, 0.2f, 1f);
         theme.statusWarning = new Color(0.8f, 0.6f, 0.1f, 1f);
+        theme.successColor = new Color(0.2f, 0.5f, 0.2f, 0.95f);
+        theme.dangerColor = new Color(0.6f, 0.15f, 0.15f, 0.95f);
+
+        theme.healthLow = new Color(0.9f, 0.2f, 0.2f, 1f);
+        theme.healthMedium = new Color(0.9f, 0.6f, 0.2f, 1f);
+        theme.healthHigh = new Color(0.3f, 0.8f, 0.3f, 1f);
+
+        theme.accentBrown = new Color(0.5f, 0.35f, 0.15f, 0.95f);
+        theme.bloodRed = new Color(0.9f, 0.2f, 0.2f, 1f);
+        theme.shadowColor = new Color(0f, 0f, 0f, 0.6f);
 
         theme.fontSizeXS = 14f;
         theme.fontSizeSM = 18f;

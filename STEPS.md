@@ -22,6 +22,8 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
 
 - [x] **M4 — Economy & Monetization**  
        `[DUSKEN COIN]`, `[BLOOD SHARDS]`, `[ASHEN ONE]` subscription + shop UI in Unity.
+       - [x] **Addiction Hooks & Rewarded Ads** — AdService interface, AdRewardManager, daily quests system, combo meter, ad prompt panels.
+       - [x] **UI Design System** — UITheme ScriptableObject (design tokens), UIFactory (component builders), UIThemeManager (theme management), refactored GothicHUD/QuestPanel/AdPromptPanel/ShopPanel to use centralized theming.
 
 - [ ] **M5 — Polish**  
        Gore VFX (VFX Graph), deeper abilities, clan systems, avatar generation pipeline.

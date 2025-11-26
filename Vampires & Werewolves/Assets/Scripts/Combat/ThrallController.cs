@@ -9,6 +9,13 @@ public class ThrallController : CombatEntity
 
     [SerializeField] private ThrallData thrallData;
 
+    private GameObject visualInstance;
+    private Animator animator;
+
+    static readonly int AttackTrigger = Animator.StringToHash("Attack");
+    static readonly int HitTrigger = Animator.StringToHash("Hit");
+    static readonly int DieTrigger = Animator.StringToHash("Die");
+
     private CombatManager combatManager;
 
     public int ThrallLevel { get; private set; } = 1;
@@ -20,6 +27,7 @@ public class ThrallController : CombatEntity
     {
         base.Awake();
         CreateDefaultData();
+        BuildVisual();
         facingDirection = 1;
     }
 
@@ -75,18 +83,80 @@ public class ThrallController : CombatEntity
 
     void CreateDefaultData()
     {
-        if (thrallData == null)
+        if (thrallData != null) return;
+
+        ThrallData resource = Resources.Load<ThrallData>("Thralls/WerewolfData");
+        if (resource != null)
         {
-            thrallData = ScriptableObject.CreateInstance<ThrallData>();
-            thrallData.thrallName = "Werewolf";
-            thrallData.baseStats = new CombatStats
+            thrallData = Instantiate(resource);
+            return;
+        }
+
+        thrallData = ScriptableObject.CreateInstance<ThrallData>();
+        thrallData.thrallName = "Werewolf";
+        thrallData.baseStats = new CombatStats
+        {
+            maxHealth = 500f,
+            attack = 55f,
+            defense = 15f,
+            speed = 1.3f
+        };
+        thrallData.color = new Color(0.3f, 0.25f, 0.35f);
+        GameObject prefab = Resources.Load<GameObject>("Characters/WerewolfModel");
+        if (prefab != null)
+        {
+            thrallData.visualPrefab = prefab;
+        }
+    }
+
+    void BuildVisual()
+    {
+        if (visualInstance != null)
+        {
+            Destroy(visualInstance);
+            visualInstance = null;
+        }
+        else
+        {
+            for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                maxHealth = 500f,
-                attack = 55f,
-                defense = 15f,
-                speed = 1.3f
-            };
-            thrallData.color = new Color(0.3f, 0.25f, 0.35f);
+                Transform child = transform.GetChild(i);
+                if (child == null) continue;
+                if (child.name.StartsWith("HPBar", StringComparison.OrdinalIgnoreCase)) continue;
+                Destroy(child.gameObject);
+            }
+        }
+
+        if (thrallData != null && thrallData.visualPrefab != null)
+        {
+            visualInstance = Instantiate(thrallData.visualPrefab, transform);
+        }
+        else
+        {
+            visualInstance = new GameObject("WerewolfVisual");
+            visualInstance.transform.SetParent(transform, false);
+            UnitVisualFactory.CreateWerewolfVisual(visualInstance.transform);
+        }
+
+        visualInstance.transform.localPosition = thrallData != null ? thrallData.visualOffset : Vector3.zero;
+        Vector3 scale = thrallData != null ? thrallData.visualScale : Vector3.one;
+        visualInstance.transform.localScale = Vector3.Scale(visualInstance.transform.localScale, scale);
+        visualInstance.name = "Visual";
+
+        animator = visualInstance.GetComponentInChildren<Animator>();
+        if (animator == null && thrallData != null && thrallData.animatorController != null)
+        {
+            animator = visualInstance.AddComponent<Animator>();
+        }
+
+        if (animator != null && thrallData != null && thrallData.animatorController != null)
+        {
+            animator.runtimeAnimatorController = thrallData.animatorController;
+        }
+
+        if (animator != null)
+        {
+            animator.Update(0f);
         }
     }
 
@@ -126,6 +196,10 @@ public class ThrallController : CombatEntity
     void Attack(CombatEntity target)
     {
         TriggerAttackEvent();
+        if (animator != null)
+        {
+            animator.SetTrigger(AttackTrigger);
+        }
 
         int baseDamage = CombatMath.ComputeDamage(Stats.attack, target.Stats.defense);
         int damage = CombatMath.ApplyVariance(baseDamage, 0.25f, UnityEngine.Random.value);
@@ -168,6 +242,10 @@ public class ThrallController : CombatEntity
 
     protected override void Die()
     {
+        if (animator != null)
+        {
+            animator.SetTrigger(DieTrigger);
+        }
         base.Die();
         if (combatManager != null)
         {
@@ -187,6 +265,11 @@ public class ThrallController : CombatEntity
         {
             ScreenEffects.Instance?.FlashBloodBorder(0.1f);
         }
+
+        if (animator != null && IsAlive && amount > 0)
+        {
+            animator.SetTrigger(HitTrigger);
+        }
     }
 
     public void Revive()
@@ -198,6 +281,12 @@ public class ThrallController : CombatEntity
         if (combatManager != null)
         {
             combatManager.ResumeCombat();
+        }
+
+        if (animator != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
         }
 
         ScreenEffects.Instance?.FlashGreen(0.3f);
