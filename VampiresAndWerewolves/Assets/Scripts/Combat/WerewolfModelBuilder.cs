@@ -11,23 +11,33 @@ public class WerewolfModelBuilder : MonoBehaviour
     [SerializeField] Color eyeColor = new Color(1f, 0.3f, 0.1f);
     [SerializeField] Color clawColor = new Color(0.9f, 0.85f, 0.75f);
 
-    void Awake()
+    void Start()
     {
-        Rebuild();
+        if (Application.isPlaying)
+        {
+            Rebuild();
+        }
     }
 
-    void OnEnable()
-    {
-        Rebuild();
-    }
-
+#if UNITY_EDITOR
     void OnValidate()
     {
+        if (PrefabUtility.IsPartOfPrefabAsset(this)) return;
+        EditorApplication.delayCall += OnDelayedRebuild;
+    }
+
+    void OnDelayedRebuild()
+    {
+        if (this == null) return;
+        if (PrefabUtility.IsPartOfPrefabAsset(this)) return;
         Rebuild();
     }
+#endif
 
     public void Rebuild()
     {
+        if (!gameObject.activeInHierarchy) return;
+        
         ClearChildren();
         BuildBody();
         BuildHead();
@@ -45,7 +55,7 @@ public class WerewolfModelBuilder : MonoBehaviour
 
     void BuildHead()
     {
-        GameObject head = CreatePart("Head", PrimitiveType.Sphere, new Vector3(0f, 2.1f, 0.15f), new Vector3(0.45f, 0.4f, 0.4f), furColor);
+        CreatePart("Head", PrimitiveType.Sphere, new Vector3(0f, 2.1f, 0.15f), new Vector3(0.45f, 0.4f, 0.4f), furColor);
         GameObject snout = CreatePart("Snout", PrimitiveType.Capsule, new Vector3(0f, 2f, 0.35f), new Vector3(0.2f, 0.2f, 0.25f), furColor);
         snout.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
@@ -137,7 +147,7 @@ public class WerewolfModelBuilder : MonoBehaviour
 #if UNITY_EDITOR
                 EditorApplication.delayCall += () =>
                 {
-                    if (this != null)
+                    if (collider != null)
                     {
                         DestroyImmediate(collider);
                     }
@@ -198,4 +208,3 @@ public class WerewolfModelBuilder : MonoBehaviour
         lodGroup.RecalculateBounds();
     }
 }
-
