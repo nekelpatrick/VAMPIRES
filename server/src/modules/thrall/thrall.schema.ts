@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { abilitySchema } from '../abilities/ability.schema'
 
 export const thrallIdSchema = z.string().min(1)
 
@@ -17,6 +18,10 @@ export const thrallSchema = z.object({
   attack: z.number().nonnegative(),
   defense: z.number().nonnegative(),
   speed: z.number().positive().default(1),
+  critChance: z.number().min(0).max(1).default(0.05),
+  lifestealPercent: z.number().min(0).max(1).default(0),
+  bleedChance: z.number().min(0).max(1).default(0),
+  abilities: z.array(abilitySchema).default([]),
   status: thrallStatusSchema.default('ACTIVE'),
   diedAt: z.date().nullable().optional(),
   reviveAt: z.date().nullable().optional(),

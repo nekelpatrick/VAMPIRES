@@ -19,6 +19,9 @@ public class BloodParticleSystem : MonoBehaviour
     [SerializeField] private int maxDecals = 30;
     [System.NonSerialized] public float decalLifetime = 10f;
 
+    [Header("VFX Graph Integration")]
+    [SerializeField] private bool preferVFXGraph = true;
+
     private List<BloodParticle> particles = new List<BloodParticle>();
     private List<GameObject> decals = new List<GameObject>();
     private Queue<GameObject> decalPool = new Queue<GameObject>();
@@ -44,6 +47,30 @@ public class BloodParticleSystem : MonoBehaviour
     }
 
     public void SpawnBloodSplash(Vector3 position, Vector3 direction, int damage)
+    {
+        if (preferVFXGraph && VFXManager.Instance != null)
+        {
+            VFXManager.Instance.SpawnBloodSplash(position, direction, damage);
+            return;
+        }
+
+        SpawnBloodSplashFallback(position, direction, damage);
+    }
+
+    public void SpawnDeathExplosion(Vector3 position)
+    {
+        if (preferVFXGraph && VFXManager.Instance != null)
+        {
+            VFXManager.Instance.SpawnDeathExplosion(position);
+            return;
+        }
+
+        SpawnBloodSplashFallback(position, Vector3.up, 100);
+        SpawnBloodSplashFallback(position, Vector3.left, 50);
+        SpawnBloodSplashFallback(position, Vector3.right, 50);
+    }
+
+    private void SpawnBloodSplashFallback(Vector3 position, Vector3 direction, int damage)
     {
         int count = Mathf.Clamp(particlesPerSplash + damage / 20, 5, 25);
 
@@ -131,6 +158,17 @@ public class BloodParticleSystem : MonoBehaviour
     {
         if (Random.value > 0.3f) return;
 
+        if (preferVFXGraph && VFXManager.Instance != null)
+        {
+            VFXManager.Instance.SpawnGroundDecal(position);
+            return;
+        }
+
+        SpawnDecalFallback(position);
+    }
+
+    private void SpawnDecalFallback(Vector3 position)
+    {
         GameObject decal;
         if (decalPool.Count > 0)
         {
@@ -189,4 +227,3 @@ public class BloodParticleSystem : MonoBehaviour
         Object.Destroy(slash, 0.15f);
     }
 }
-

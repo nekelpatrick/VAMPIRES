@@ -6,7 +6,10 @@ import {
   getThreatLevel,
   isWithinMatchRange,
   findMatch,
-  calculatePvpRewards
+  calculatePvpRewards,
+  isQueueExpired,
+  generateBotOpponent,
+  calculateLoserPenalty
 } from '../src/modules/pvp/matchmaker'
 import type { Thrall } from '../src/modules/thrall/thrall.schema'
 import type { QueueEntry } from '../src/modules/pvp/pvp.schema'
@@ -180,6 +183,91 @@ describe('Matchmaker', () => {
       assert.strictEqual(botRewards.duskenCoin, Math.floor(playerRewards.duskenCoin * 0.5))
 
       Math.random = originalRandom
+    })
+  })
+
+  describe('isQueueExpired', () => {
+    it('returns false for recent entries', () => {
+      const entry: QueueEntry = {
+        playerId: 'player-1',
+        thrallId: 'thrall-1',
+        powerScore: 200,
+        joinedAt: new Date(),
+        status: 'WAITING'
+      }
+
+      assert.strictEqual(isQueueExpired(entry), false)
+    })
+
+    it('returns true for old entries', () => {
+      const entry: QueueEntry = {
+        playerId: 'player-1',
+        thrallId: 'thrall-1',
+        powerScore: 200,
+        joinedAt: new Date(Date.now() - 60000),
+        status: 'WAITING'
+      }
+
+      assert.strictEqual(isQueueExpired(entry), true)
+    })
+
+    it('returns true at exactly 30 seconds', () => {
+      const entry: QueueEntry = {
+        playerId: 'player-1',
+        thrallId: 'thrall-1',
+        powerScore: 200,
+        joinedAt: new Date(Date.now() - 30000),
+        status: 'WAITING'
+      }
+
+      assert.strictEqual(isQueueExpired(entry), true)
+    })
+  })
+
+  describe('generateBotOpponent', () => {
+    it('generates a bot with werewolf archetype', () => {
+      const bot = generateBotOpponent(200)
+
+      assert.ok(bot.thrallId.startsWith('bot-'))
+      assert.strictEqual(bot.archetype, '[WEREWOLF]')
+    })
+
+    it('generates power score within variance range', () => {
+      const playerPowerScore = 200
+      const results: number[] = []
+
+      for (let i = 0; i < 100; i++) {
+        const bot = generateBotOpponent(playerPowerScore)
+        results.push(bot.powerScore)
+      }
+
+      const min = Math.min(...results)
+      const max = Math.max(...results)
+
+      assert.ok(min >= playerPowerScore * 0.85, `Min ${min} should be >= ${playerPowerScore * 0.85}`)
+      assert.ok(max <= playerPowerScore * 1.15, `Max ${max} should be <= ${playerPowerScore * 1.15}`)
+    })
+  })
+
+  describe('calculateLoserPenalty', () => {
+    it('returns negative ranking points', () => {
+      const penalty = calculateLoserPenalty(5)
+
+      assert.ok(penalty.rankingPoints < 0)
+    })
+
+    it('calculates penalty based on level', () => {
+      const lowLevelPenalty = calculateLoserPenalty(1)
+      const highLevelPenalty = calculateLoserPenalty(20)
+
+      assert.strictEqual(lowLevelPenalty.rankingPoints, -5)
+      assert.strictEqual(highLevelPenalty.rankingPoints, -20)
+    })
+
+    it('has minimum penalty of 5', () => {
+      const penalty = calculateLoserPenalty(3)
+
+      assert.strictEqual(penalty.rankingPoints, -5)
     })
   })
 })

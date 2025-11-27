@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00000000000000000000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: a14c47e10a9254765a946231a678a7c9, type: 3}
   m_Name: HordeMinionData
   m_EditorClassIdentifier: 
   enemyName: Horde Minion
@@ -18,6 +18,8 @@ MonoBehaviour:
     attack: 14
     defense: 4
     speed: 1
+    critChance: 0.05
+    lifestealPercent: 0
+    bleedChance: 0
   normalColor: {r: 0.8, g: 0.2, b: 0.2, a: 1}
   eliteColor: {r: 0.9, g: 0.1, b: 0.4, a: 1}
-

@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
+import { abilitiesRouter } from '../modules/abilities'
 import { battleRouter } from '../modules/battle'
+import { clanRouter } from '../modules/clan'
 import { economyRouter } from '../modules/economy'
 import { playerRouter } from '../modules/player'
 import { pvpRouter } from '../modules/pvp'
@@ -35,6 +37,8 @@ export const appRouter = router({
   diagnostics: diagnosticsRouter,
   player: playerRouter,
   thrall: thrallRouter,
+  abilities: abilitiesRouter,
+  clan: clanRouter,
   economy: economyRouter,
   battle: battleRouter,
   pvp: pvpRouter,

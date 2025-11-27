@@ -25,11 +25,14 @@ The project has migrated from a JavaScript/Three.js client to **Unity (C#)**. Pr
        - [x] **Addiction Hooks & Rewarded Ads** — AdService interface, AdRewardManager, daily quests system, combo meter, ad prompt panels.
        - [x] **UI Design System** — UITheme ScriptableObject (design tokens), UIFactory (component builders), UIThemeManager (theme management), refactored GothicHUD/QuestPanel/AdPromptPanel/ShopPanel to use centralized theming.
 
-- [ ] **M5 — Polish**  
-       Gore VFX (VFX Graph), deeper abilities, clan systems, avatar generation pipeline.
+- [x] **M5 — Polish**  
+       Gore VFX (VFX Graph), deeper abilities, clan systems. Avatar generation deferred to M6.
+       - [x] **VFX Graph Integration** — VFXManager, VFXConfig ScriptableObject, refactored BloodParticleSystem to use VFX Graph prefabs with procedural fallback.
+       - [x] **Abilities System** — 5 ability types (Lifesteal, Bleed, Stun, Rage, Howl), AbilitySystem.cs, StatusEffectHandler.cs, server-side ability schema/service/router with combat-engine integration.
+       - [x] **Clan System** — 3 clans (Nocturnum +5% lifesteal, Sableheart +10% attack speed, Eclipsa +15% bleed), ClanManager.cs, ClanPanel.cs UI, server clan module with bonuses applied in combat.
 
 - [ ] **M6 — Soft Launch**  
-       Analytics (Unity Analytics / Firebase), A/B experiments, performance tuning across iOS/Android/WebGL.
+       Analytics (Unity Analytics / Firebase), A/B experiments, performance tuning across iOS/Android/WebGL, avatar generation pipeline.
 
 ---
 
