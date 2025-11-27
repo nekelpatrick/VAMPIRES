@@ -52,6 +52,7 @@ public class AtmosphereSystem : MonoBehaviour
         bg.name = "Background";
         bg.transform.SetParent(transform);
         bg.transform.position = new Vector3(0, 3, 15);
+        bg.transform.rotation = Quaternion.Euler(0, 180, 0);
         bg.transform.localScale = new Vector3(50, 20, 1);
 
         Renderer r = bg.GetComponent<Renderer>();
@@ -170,12 +171,13 @@ public class AtmosphereSystem : MonoBehaviour
             fog.name = "FogLayer_" + i;
             fog.transform.SetParent(transform);
             fog.transform.position = new Vector3(0, 0.5f + i * 0.3f, 5 - i);
+            fog.transform.rotation = Quaternion.Euler(0, 180, 0);
             fog.transform.localScale = new Vector3(40, 3, 1);
 
             Renderer r = fog.GetComponent<Renderer>();
             Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             Color c = fogColor;
-            c.a = 0.15f - i * 0.03f;
+            c.a = 0.1f - i * 0.02f;
             mat.color = c;
             r.material = mat;
 
@@ -189,13 +191,13 @@ public class AtmosphereSystem : MonoBehaviour
         GameObject groundFog = GameObject.CreatePrimitive(PrimitiveType.Quad);
         groundFog.name = "GroundFog";
         groundFog.transform.SetParent(transform);
-        groundFog.transform.position = new Vector3(0, -0.3f, 0);
+        groundFog.transform.position = new Vector3(0, -0.35f, 0);
         groundFog.transform.rotation = Quaternion.Euler(90, 0, 0);
-        groundFog.transform.localScale = new Vector3(30, 10, 1);
+        groundFog.transform.localScale = new Vector3(30, 8, 1);
 
         Renderer r = groundFog.GetComponent<Renderer>();
         Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        mat.color = new Color(0.05f, 0.02f, 0.03f, 0.4f);
+        mat.color = new Color(0.04f, 0.02f, 0.025f, 0.25f);
         r.material = mat;
 
         Object.Destroy(groundFog.GetComponent<Collider>());

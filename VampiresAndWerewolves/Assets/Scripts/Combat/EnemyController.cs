@@ -14,6 +14,7 @@ public class EnemyController : CombatEntity
     {
         base.Awake();
         facingDirection = -1;
+        transform.rotation = Quaternion.Euler(0, -90f, 0);
     }
 
     public void Setup(EnemyData data, int wave, bool elite)
@@ -30,7 +31,7 @@ public class EnemyController : CombatEntity
         CreateVisuals();
 
         float scale = baseScale * (elite ? 1.5f : 1f);
-        transform.localScale = new Vector3(-scale, scale, scale);
+        transform.localScale = new Vector3(scale, scale, scale);
 
         combatManager = CombatManager.Instance;
         if (combatManager != null)

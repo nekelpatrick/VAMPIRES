@@ -29,6 +29,7 @@ public class ThrallController : CombatEntity
         CreateDefaultData();
         BuildVisual();
         facingDirection = 1;
+        transform.rotation = Quaternion.Euler(0, 90f, 0);
     }
 
     int CalculateXPForLevel(int level)

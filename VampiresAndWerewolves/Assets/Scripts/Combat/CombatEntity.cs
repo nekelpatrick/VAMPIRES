@@ -58,8 +58,13 @@ public abstract class CombatEntity : MonoBehaviour
             Vector3 direction = (currentTarget.transform.position - transform.position).normalized;
             transform.position += direction * moveSpeed * Time.deltaTime;
 
-            facingDirection = direction.x > 0 ? 1 : -1;
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * facingDirection, transform.localScale.y, transform.localScale.z);
+            int newFacing = direction.x > 0 ? 1 : -1;
+            if (newFacing != facingDirection)
+            {
+                facingDirection = newFacing;
+                float targetYRotation = facingDirection > 0 ? 90f : -90f;
+                transform.rotation = Quaternion.Euler(0, targetYRotation, 0);
+            }
         }
     }
 

@@ -50,7 +50,7 @@ AnimatorController:
   - {fileID: 7400000, guid: f0aeea29324e42fab63ab42a2072a3a4, type: 2}
   - {fileID: 7400000, guid: f431fd6a1c2d4dd69f8f7ba753e5b072, type: 2}
   - {fileID: 7400000, guid: ab1c9287631d4a0d8b4d460e0d2b206d, type: 2}
---- !u!1101 &1100000
+--- !u!1107 &1100000
 AnimatorStateMachine:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}

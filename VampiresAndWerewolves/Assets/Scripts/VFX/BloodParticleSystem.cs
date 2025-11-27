@@ -6,10 +6,11 @@ public class BloodParticleSystem : MonoBehaviour
     public static BloodParticleSystem Instance { get; private set; }
 
     [Header("Blood Splash Settings")]
-    [SerializeField] private int particlesPerSplash = 12;
+    [SerializeField] private int particlesPerSplash = 6;
     [SerializeField] private float splashForce = 8f;
-    [SerializeField] private float particleLifetime = 1.5f;
-    [SerializeField] private float gravity = 15f;
+    [SerializeField] private float particleLifetime = 0.8f;
+    [SerializeField] private float gravity = 20f;
+    [SerializeField] private int maxActiveParticles = 100;
 
     [Header("Colors")]
     [SerializeField] private Color bloodColorLight = new Color(0.7f, 0.1f, 0.1f, 1f);
@@ -17,7 +18,7 @@ public class BloodParticleSystem : MonoBehaviour
 
     [Header("Gore Decals")]
     [SerializeField] private int maxDecals = 30;
-    [System.NonSerialized] public float decalLifetime = 10f;
+    [System.NonSerialized] public float decalLifetime = 5f;
 
     [Header("VFX Graph Integration")]
     [SerializeField] private bool preferVFXGraph = true;
@@ -65,14 +66,18 @@ public class BloodParticleSystem : MonoBehaviour
             return;
         }
 
-        SpawnBloodSplashFallback(position, Vector3.up, 100);
-        SpawnBloodSplashFallback(position, Vector3.left, 50);
-        SpawnBloodSplashFallback(position, Vector3.right, 50);
+        SpawnBloodSplashFallback(position, Vector3.up, 40);
+        SpawnBloodSplashFallback(position, Vector3.left, 20);
+        SpawnBloodSplashFallback(position, Vector3.right, 20);
     }
 
     private void SpawnBloodSplashFallback(Vector3 position, Vector3 direction, int damage)
     {
-        int count = Mathf.Clamp(particlesPerSplash + damage / 20, 5, 25);
+        if (particles.Count >= maxActiveParticles) return;
+
+        int count = Mathf.Clamp(particlesPerSplash + damage / 30, 3, 15);
+        int availableSlots = maxActiveParticles - particles.Count;
+        count = Mathf.Min(count, availableSlots);
 
         for (int i = 0; i < count; i++)
         {

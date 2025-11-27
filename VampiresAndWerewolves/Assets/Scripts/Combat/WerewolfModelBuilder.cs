@@ -1,9 +1,5 @@
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
-[ExecuteAlways]
 public class WerewolfModelBuilder : MonoBehaviour
 {
     [SerializeField] Color furColor = new Color(0.25f, 0.22f, 0.3f);
@@ -13,31 +9,11 @@ public class WerewolfModelBuilder : MonoBehaviour
 
     void Start()
     {
-        if (Application.isPlaying)
-        {
-            Rebuild();
-        }
-    }
-
-#if UNITY_EDITOR
-    void OnValidate()
-    {
-        if (PrefabUtility.IsPartOfPrefabAsset(this)) return;
-        EditorApplication.delayCall += OnDelayedRebuild;
-    }
-
-    void OnDelayedRebuild()
-    {
-        if (this == null) return;
-        if (PrefabUtility.IsPartOfPrefabAsset(this)) return;
         Rebuild();
     }
-#endif
 
     public void Rebuild()
     {
-        if (!gameObject.activeInHierarchy) return;
-        
         ClearChildren();
         BuildBody();
         BuildHead();
@@ -138,22 +114,7 @@ public class WerewolfModelBuilder : MonoBehaviour
         Collider collider = part.GetComponent<Collider>();
         if (collider != null)
         {
-            if (Application.isPlaying)
-            {
-                Destroy(collider);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                EditorApplication.delayCall += () =>
-                {
-                    if (collider != null)
-                    {
-                        DestroyImmediate(collider);
-                    }
-                };
-#endif
-            }
+            Destroy(collider);
         }
 
         return part;
@@ -178,16 +139,7 @@ public class WerewolfModelBuilder : MonoBehaviour
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
             Transform child = transform.GetChild(i);
-            if (Application.isPlaying)
-            {
-                Destroy(child.gameObject);
-            }
-            else
-            {
-#if UNITY_EDITOR
-                DestroyImmediate(child.gameObject);
-#endif
-            }
+            Destroy(child.gameObject);
         }
     }
 
