@@ -47,7 +47,7 @@ public class StatusEffectHandler : MonoBehaviour
 
     public void ApplyEffect(StatusEffectData data)
     {
-        var existing = activeEffects.FindIndex(e => e.type == data.type);
+        var existing = activeEffects.FindIndex(e => e.data.type == data.type);
         if (existing >= 0)
         {
             var effect = activeEffects[existing];

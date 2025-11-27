@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "lint": "npm run lint --prefix client-legacy",
-    "typecheck": "npm run typecheck --prefix client-legacy",
-    "test": "npm run test --prefix client-legacy",
+    "lint": "npm run lint --prefix server",
+    "lint:fix": "npm run lint -- --fix",
+    "format:fix": "npm run format --prefix server",
+    "typecheck": "npm run typecheck --prefix server",
+    "test": "npm run test --prefix server",
+    "test:all": "npm run test --prefix server",
     "prepare": "husky"
   },
   "devDependencies": {

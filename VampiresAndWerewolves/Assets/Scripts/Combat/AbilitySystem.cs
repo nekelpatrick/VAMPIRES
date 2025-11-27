@@ -141,7 +141,7 @@ public class AbilitySystem : MonoBehaviour
 
     private void ApplyHowl(CombatEntity source, AbilityDefinition def)
     {
-        var enemies = FindObjectsOfType<EnemyController>();
+        var enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
         foreach (var enemy in enemies)
         {
             float distance = Vector3.Distance(source.transform.position, enemy.transform.position);
